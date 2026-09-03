@@ -42,18 +42,18 @@ function useHeroParticles(count: number): Particle[] {
       Array.from({ length: count }, (_, id) => ({
         id,
         left: Math.random() * 100,
-        size: 3 + Math.random() * 4,
-        duration: 9 + Math.random() * 7,
-        delay: Math.random() * 5,
+        size: 5 + Math.random() * 6,
+        duration: 6 + Math.random() * 5,
+        delay: Math.random() * 3,
         drift: 12 + Math.random() * 20,
-        maxOpacity: 0.55 + Math.random() * 0.4,
+        maxOpacity: 0.7 + Math.random() * 0.3,
       })),
     [count],
   );
 }
 
 function HeroParticles() {
-  const particles = useHeroParticles(18);
+  const particles = useHeroParticles(16);
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
@@ -66,12 +66,13 @@ function HeroParticles() {
             bottom: '-5%',
             width: p.size,
             height: p.size,
-            boxShadow: '0 0 8px 2px rgb(var(--color-accent) / 0.95)',
+            boxShadow: '0 0 14px 4px rgb(var(--color-accent) / 1)',
           }}
           animate={{
             y: ['0%', '-130vh'],
             x: [0, p.drift, -p.drift, 0],
             opacity: [0, p.maxOpacity, p.maxOpacity, 0],
+            scale: [0.8, 1.15, 0.8],
           }}
           transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: 'linear' }}
         />
@@ -95,7 +96,7 @@ export function Hero() {
   const contentOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
   return (
-    <section ref={sectionRef} className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black">
+    <section ref={sectionRef} className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink">
       {/* Imagem de fundo em tela cheia com leve zoom contínuo no scroll (efeito Ken Burns) */}
       {hero.image && (
         <motion.div className="absolute inset-0" style={{ scale: bgScale }}>
@@ -109,8 +110,8 @@ export function Hero() {
       )}
 
       {/* Overlay escuro uniforme para garantir contraste do texto centralizado sobre a foto */}
-      <div className="absolute inset-0 bg-black/60" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/50" />
+      <div className="absolute inset-0 bg-ink/70" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/60" />
 
       {/* Glow de destaque animado, sutil, para reforçar identidade da marca sobre a foto */}
       <motion.div

@@ -12,7 +12,7 @@ export function Badge({ children, tone = 'accent', className }: BadgeProps) {
     accent: 'bg-accent/10 text-accent',
     dark: 'bg-ink text-white',
     success: 'bg-emerald-100 text-emerald-700',
-    muted: 'bg-black/5 text-ink-soft',
+    muted: 'bg-ink/5 text-ink-soft',
   };
 
   return (

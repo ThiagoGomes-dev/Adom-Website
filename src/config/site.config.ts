@@ -56,17 +56,17 @@ export const companyConfig: CompanyConfig = {
 
   theme: {
     colors: {
-      // Paleta alinhada ao Instagram da ADOM: azul-marinho como tom dominante,
-      // bege como destaque por cima, preto e branco usados em detalhes/efeitos
-      // (header, hero, tipografia de impacto).
-      primary: '15 23 42', // azul-marinho profundo — base da marca
-      primaryDark: '7 12 23',
-      primaryLight: '51 65 85',
-      accent: '201 173 138', // bege — destaque por cima do azul-marinho e do preto
-      text: '15 23 42', // texto em tom azul-marinho em vez de preto puro
-      textSoft: '81 92 110',
+      // Paleta oficial ADOM: azul-marinho (#001444) como tom dominante, mesclado
+      // com cinza e branco. Preto reservado só para detalhes bem pontuais —
+      // não é mais usado como fundo de seção (header, hero etc.).
+      primary: '0 20 68', // #001444 — azul-marinho oficial da marca
+      primaryDark: '0 12 41', // variação mais escura do mesmo azul
+      primaryLight: '46 74 128',
+      accent: '201 173 138', // bege — destaque por cima do azul-marinho
+      text: '0 20 68', // texto no mesmo azul-marinho, em vez de preto puro
+      textSoft: '110 120 135', // cinza — neutro de apoio
       surface: '255 255 255',
-      surfaceAlt: '244 243 241',
+      surfaceAlt: '241 242 244', // cinza bem claro, em vez do bege-claro anterior
     },
     radius: '0.625rem',
   },

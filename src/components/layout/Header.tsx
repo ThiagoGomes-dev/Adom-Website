@@ -21,7 +21,7 @@ export function Header() {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-0 z-40 w-full border-b border-white/10 bg-black"
+      className="sticky top-0 z-40 w-full border-b border-white/10 bg-ink"
     >
       <Container className="flex h-16 items-center justify-between gap-4 sm:h-20">
         <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label={`${config.businessName} — início`}>
