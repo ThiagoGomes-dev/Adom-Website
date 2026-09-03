@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, type CSSProperties } from 'react';
 import { ArrowRight, MessageCircle, Sparkles, Star } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
@@ -44,7 +44,7 @@ function useHeroParticles(count: number): Particle[] {
         left: Math.random() * 100,
         size: 1.5 + Math.random() * 2,
         duration: 6 + Math.random() * 5,
-        delay: Math.random() * 3,
+        delay: Math.random() * -6, // negativo: começa "no meio" do ciclo, sem esperar tudo aparecer de uma vez
         drift: 12 + Math.random() * 20,
         maxOpacity: 0.7 + Math.random() * 0.3,
       })),
@@ -52,29 +52,32 @@ function useHeroParticles(count: number): Particle[] {
   );
 }
 
+/**
+ * Poeira flutuando sobre a foto, em CSS puro (sem Framer Motion) — evita
+ * qualquer problema de animação controlada por JS sumir após remounts/HMR.
+ */
 function HeroParticles() {
   const particles = useHeroParticles(16);
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       {particles.map((p) => (
-        <motion.span
+        <span
           key={p.id}
-          className="absolute rounded-full bg-white"
-          style={{
-            left: `${p.left}%`,
-            bottom: '-5%',
-            width: p.size,
-            height: p.size,
-            boxShadow: '0 0 6px 1.5px rgb(var(--color-accent) / 1)',
-          }}
-          animate={{
-            y: ['0%', '-130vh'],
-            x: [0, p.drift, -p.drift, 0],
-            opacity: [0, p.maxOpacity, p.maxOpacity, 0],
-            scale: [0.8, 1.15, 0.8],
-          }}
-          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: 'linear' }}
+          className="absolute rounded-full bg-white animate-float-up"
+          style={
+            {
+              left: `${p.left}%`,
+              bottom: '-5%',
+              width: p.size,
+              height: p.size,
+              boxShadow: '0 0 6px 1.5px rgb(var(--color-accent) / 1)',
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay}s`,
+              '--particle-drift': `${p.drift}px`,
+              '--particle-opacity': p.maxOpacity,
+            } as CSSProperties
+          }
         />
       ))}
     </div>

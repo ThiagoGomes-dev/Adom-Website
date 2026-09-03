@@ -73,6 +73,12 @@ export default {
           '0%': { backgroundPosition: '200% 50%' },
           '100%': { backgroundPosition: '-200% 50%' },
         },
+        'float-up': {
+          '0%': { transform: 'translateY(0) translateX(0)', opacity: '0' },
+          '12%': { opacity: 'var(--particle-opacity, 1)' },
+          '88%': { opacity: 'var(--particle-opacity, 1)' },
+          '100%': { transform: 'translateY(-115vh) translateX(var(--particle-drift, 16px))', opacity: '0' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -81,6 +87,7 @@ export default {
         'pulse-ring': 'pulse-ring 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         marquee: 'marquee 34s linear infinite',
         shine: 'shine 5s linear infinite',
+        'float-up': 'float-up 8s linear infinite',
       },
     },
   },
