@@ -42,7 +42,7 @@ function useHeroParticles(count: number): Particle[] {
       Array.from({ length: count }, (_, id) => ({
         id,
         left: Math.random() * 100,
-        size: 5 + Math.random() * 6,
+        size: 1.5 + Math.random() * 2,
         duration: 6 + Math.random() * 5,
         delay: Math.random() * 3,
         drift: 12 + Math.random() * 20,
@@ -66,7 +66,7 @@ function HeroParticles() {
             bottom: '-5%',
             width: p.size,
             height: p.size,
-            boxShadow: '0 0 14px 4px rgb(var(--color-accent) / 1)',
+            boxShadow: '0 0 6px 1.5px rgb(var(--color-accent) / 1)',
           }}
           animate={{
             y: ['0%', '-130vh'],
@@ -112,14 +112,6 @@ export function Hero() {
       {/* Overlay escuro uniforme para garantir contraste do texto centralizado sobre a foto */}
       <div className="absolute inset-0 bg-ink/70" />
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/60" />
-
-      {/* Glow de destaque animado, sutil, para reforçar identidade da marca sobre a foto */}
-      <motion.div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/20 blur-3xl"
-        animate={{ scale: [1, 1.12, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-        aria-hidden="true"
-      />
 
       {/* Poeira dourada flutuando sobre a foto, em loop — toque de elegância minimalista */}
       <HeroParticles />
