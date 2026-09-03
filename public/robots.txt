@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Ao publicar em produção, adicione a linha abaixo apontando para o domínio real:
+# Sitemap: https://www.seudominio.com.br/sitemap.xml

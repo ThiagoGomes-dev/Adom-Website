@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Tema por cliente.
+  Estes valores são o padrão (fallback) e são sobrescritos em runtime por
+  src/config/theme.config.ts via ThemeProvider (ver src/context/ThemeContext.tsx).
+  Formato "R G B" (sem vírgulas) para funcionar com <alpha-value> do Tailwind.
+*/
+:root {
+  --color-primary: 17 24 39; /* slate-900 */
+  --color-primary-dark: 8 11 19;
+  --color-primary-light: 55 65 81;
+  --color-accent: 180 133 74; /* âmbar/terracota - identidade Casa Urbana */
+  --color-text: 23 23 23;
+  --color-text-soft: 82 82 82;
+  --color-surface: 255 255 255;
+  --color-surface-alt: 250 249 247;
+  --radius: 0.875rem;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-surface text-ink antialiased font-sans;
+  overflow-x: hidden;
+}
+
+::selection {
+  background-color: rgb(var(--color-accent) / 0.25);
+}
+
+/* Scrollbar discreto (webkit) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-primary) / 0.25);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Foco visível e acessível em qualquer elemento interativo */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Utilitário: trava o scroll do body quando um modal/drawer está aberto */
+.scroll-locked {
+  overflow: hidden;
+  height: 100dvh;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .container-px {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
