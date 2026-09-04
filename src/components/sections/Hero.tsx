@@ -6,7 +6,6 @@ import { resolveCta } from '@/lib/cta';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { EASE_EXPO } from '@/components/motion/reveal';
-import { cn } from '@/lib/cn';
 
 function ctaProps(resolved: ReturnType<typeof resolveCta>) {
   return resolved.kind === 'to' ? { to: resolved.target } : { href: resolved.target, external: resolved.external };
@@ -143,15 +142,16 @@ export function Hero() {
               const isHighlight = highlightWords.includes(normalizeWord(word));
               return (
                 <span key={`${word}-${i}`} className="mx-[0.14em] inline-block overflow-hidden pb-1 align-top">
-                  <motion.span
-                    variants={wordVariant}
-                    className={cn(
-                      'inline-block',
-                      isHighlight &&
-                        'bg-[image:linear-gradient(110deg,rgb(var(--color-accent))_20%,#f6ecd9_45%,rgb(var(--color-accent))_70%)] bg-[length:250%_100%] bg-clip-text text-transparent animate-shine drop-shadow-[0_2px_24px_rgb(var(--color-accent)/0.35)]',
+                  <motion.span variants={wordVariant} className="inline-block">
+                    {isHighlight && config.logo ? (
+                      <img
+                        src={config.logo}
+                        alt={word}
+                        className="inline-block h-[0.8em] w-auto align-[-0.06em] drop-shadow-[0_2px_20px_rgb(var(--color-accent)/0.55)]"
+                      />
+                    ) : (
+                      word
                     )}
-                  >
-                    {word}
                   </motion.span>
                 </span>
               );

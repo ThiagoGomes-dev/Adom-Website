@@ -21,7 +21,7 @@ export const companyConfig: CompanyConfig = {
   tagline: 'Camisetas básicas premium para o seu dia a dia',
   businessType: 'catalog-categories',
   plan,
-  logo: '/img/adom-logo-white.png', // logotipo completo (wordmark) em branco, para o header preto
+  logo: '/img/adom-wordmark.png', // logotipo oficial do cliente (LOGOADOM.jpeg, fundo removido)
   logoIcon: '/img/adom-icon-white.png', // só o "A" em branco — usado em espaços compactos (header mobile)
   favicon: '/favicon-192.png',
   currency: 'BRL',
