@@ -149,7 +149,7 @@ export function Hero() {
                           <img
                             src={config.logo}
                             alt={word}
-                            className="inline-block h-[0.68em] w-auto align-[-0.03em] drop-shadow-[0_2px_20px_rgb(var(--color-accent)/0.55)]"
+                            className="inline-block h-[0.68em] w-auto align-[-0.03em]"
                           />
                         ) : (
                           word
