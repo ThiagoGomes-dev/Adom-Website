@@ -88,7 +88,7 @@ export function Hero() {
   const { hero } = config;
   const primary = resolveCta(config, hero.primaryCta);
   const secondary = hero.secondaryCta ? resolveCta(config, hero.secondaryCta) : null;
-  const words = hero.title.split(' ');
+  const lines = hero.title.split('\n');
   const highlightWords = (hero.highlight?.split(' ') ?? []).map(normalizeWord);
 
   const sectionRef = useRef<HTMLElement>(null);
@@ -119,13 +119,13 @@ export function Hero() {
       <HeroParticles />
 
       <motion.div style={{ y: contentY, opacity: contentOpacity }} className="relative z-10 w-full">
-        <Container className="flex flex-col items-center px-6 py-32 text-center">
+        <Container className="flex flex-col items-center px-6 py-24 text-center sm:py-28 lg:py-32">
           {hero.eyebrow && (
             <motion.span
               initial={{ opacity: 0, y: -12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: EASE_EXPO }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-sm"
+              className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-white backdrop-blur-sm"
             >
               <Sparkles size={12} className="text-accent" />
               {hero.eyebrow}
@@ -136,33 +136,37 @@ export function Hero() {
             initial="hidden"
             animate="visible"
             variants={titleContainer}
-            className="mt-6 max-w-5xl text-balance font-display text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl"
+            className="mt-8 max-w-4xl text-balance font-display text-5xl font-medium uppercase leading-[1.18] tracking-normal text-white sm:text-6xl lg:text-7xl"
           >
-            {words.map((word, i) => {
-              const isHighlight = highlightWords.includes(normalizeWord(word));
-              return (
-                <span key={`${word}-${i}`} className="mx-[0.14em] inline-block overflow-hidden pb-1 align-top">
-                  <motion.span variants={wordVariant} className="inline-block">
-                    {isHighlight && config.logo ? (
-                      <img
-                        src={config.logo}
-                        alt={word}
-                        className="inline-block h-[0.8em] w-auto align-[-0.06em] drop-shadow-[0_2px_20px_rgb(var(--color-accent)/0.55)]"
-                      />
-                    ) : (
-                      word
-                    )}
-                  </motion.span>
-                </span>
-              );
-            })}
+            {lines.map((line, li) => (
+              <span key={li} className="block">
+                {line.split(' ').map((word, i) => {
+                  const isHighlight = highlightWords.includes(normalizeWord(word));
+                  return (
+                    <span key={`${li}-${word}-${i}`} className="mx-[0.16em] inline-block overflow-hidden pb-1 align-top">
+                      <motion.span variants={wordVariant} className="inline-block">
+                        {isHighlight && config.logo ? (
+                          <img
+                            src={config.logo}
+                            alt={word}
+                            className="inline-block h-[0.68em] w-auto align-[-0.03em] drop-shadow-[0_2px_20px_rgb(var(--color-accent)/0.55)]"
+                          />
+                        ) : (
+                          word
+                        )}
+                      </motion.span>
+                    </span>
+                  );
+                })}
+              </span>
+            ))}
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.55, ease: EASE_EXPO }}
-            className="mt-5 max-w-lg text-balance text-base leading-relaxed text-white/75 sm:text-lg"
+            className="mt-8 max-w-md text-balance text-base leading-relaxed text-white/70 sm:text-lg"
           >
             {hero.subtitle}
           </motion.p>
@@ -171,7 +175,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.7, ease: EASE_EXPO }}
-            className="mt-9 flex flex-col items-center gap-4"
+            className="mt-10 flex flex-col items-center gap-4"
           >
             <motion.span whileHover={{ scale: 1.035 }} whileTap={{ scale: 0.97 }} className="inline-block">
               <Button

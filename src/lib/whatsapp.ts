@@ -37,12 +37,31 @@ export function buildProductMessage(selection: ProductSelection): string {
   return lines.join('\n');
 }
 
+export type PaymentMethod = 'pix' | 'credito';
+
+export interface CheckoutInfo {
+  /** CEP digitado pelo cliente, formatado (ex: "58400-000"). */
+  cep?: string;
+  /** Cidade resolvida a partir do CEP (via ViaCEP), quando disponível. */
+  city?: string | null;
+  /** true quando a cidade resolvida é Campina Grande (frete fixo). */
+  fixedShipping?: boolean;
+  street?: string;
+  neighborhood?: string;
+  number?: string;
+  reference?: string;
+  paymentMethod?: PaymentMethod;
+  /** Nº de parcelas escolhido, quando a forma de pagamento é cartão de crédito. */
+  installments?: number;
+}
+
 /**
  * Monta a mensagem com o histórico completo do carrinho — nome, variantes,
- * quantidade e valor de cada item, mais o total. É o coração do fluxo
+ * quantidade e valor de cada item, mais o total — seguida do CEP/frete e da
+ * forma de pagamento escolhidos no carrinho. É o coração do fluxo
  * "adicionar ao carrinho -> finalizar pelo WhatsApp".
  */
-export function buildCartMessage(items: CartItem[], businessName: string): string {
+export function buildCartMessage(items: CartItem[], businessName: string, checkout?: CheckoutInfo): string {
   const lines = [`Olá, ${businessName}! Gostaria de finalizar este pedido:`, ''];
 
   items.forEach((item, index) => {
@@ -56,14 +75,44 @@ export function buildCartMessage(items: CartItem[], businessName: string): strin
 
   const total = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   lines.push(`Total: ${formatPrice(total)}`);
-  lines.push('', 'Poderiam confirmar disponibilidade e formas de pagamento?');
+
+  if (checkout?.cep || checkout?.street) {
+    lines.push('', 'Endereço de entrega:');
+    if (checkout.street) {
+      const line1 = `${checkout.street}${checkout.number ? `, ${checkout.number}` : ''}`;
+      lines.push(checkout.neighborhood ? `${line1} - ${checkout.neighborhood}` : line1);
+    }
+    if (checkout.reference) lines.push(`Referência: ${checkout.reference}`);
+    if (checkout.cep) lines.push(`CEP: ${checkout.cep}${checkout.city ? ` (${checkout.city})` : ''}`);
+    lines.push(
+      checkout.fixedShipping
+        ? 'Frete: R$ 12,00 (entrega fixa em Campina Grande)'
+        : 'Frete: a consultar (fora de Campina Grande)',
+    );
+  }
+
+  if (checkout?.paymentMethod) {
+    lines.push('', `Forma de pagamento: ${checkout.paymentMethod === 'credito' ? 'Cartão de crédito' : 'Pix'}`);
+    if (checkout.paymentMethod === 'credito') {
+      const installments = checkout.installments ?? 1;
+      lines.push(`Parcelamento: ${installments}x${installments <= 2 ? ' sem juros' : ' com juros da maquininha'}`);
+      lines.push('Até 2x sem juros. Acima disso, juros da maquininha — a consultar no WhatsApp.');
+    }
+  }
+
+  lines.push('', 'Poderiam confirmar disponibilidade e finalizar o pedido?');
 
   return lines.join('\n');
 }
 
 /** Atalho: link de WhatsApp já pronto com o pedido completo do carrinho. */
-export function buildCartWhatsAppLink(phone: string, items: CartItem[], businessName: string): string {
-  return generateWhatsAppLink(phone, buildCartMessage(items, businessName));
+export function buildCartWhatsAppLink(
+  phone: string,
+  items: CartItem[],
+  businessName: string,
+  checkout?: CheckoutInfo,
+): string {
+  return generateWhatsAppLink(phone, buildCartMessage(items, businessName, checkout));
 }
 
 /** Mensagem de orçamento genérico (sem produto específico). */

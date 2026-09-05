@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
-import { products as demoProducts } from '@/data/demo/products';
+import { useCatalog } from '@/context/CatalogContext';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
@@ -8,9 +8,10 @@ import { ProductGrid } from '@/components/catalog/ProductGrid';
 /** Vitrine de produtos em destaque na home — leva para o catálogo completo. */
 export function FeaturedProducts() {
   const config = useCompanyConfig();
+  const { products } = useCatalog();
   if (!config.features.showCatalog || !config.pages.products) return null;
 
-  const featured = demoProducts.filter((p) => p.featured).slice(0, 8);
+  const featured = products.filter((p) => p.featured).slice(0, 8);
   if (!featured.length) return null;
 
   return (

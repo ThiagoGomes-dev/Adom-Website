@@ -1,6 +1,18 @@
 import { useMemo, useState } from 'react';
 import type { Product } from '@/types';
 
+function initialActiveImage(product: Product, selectedByGroupId: Record<string, string>): number {
+  for (const group of product.variants ?? []) {
+    const label = selectedByGroupId[group.id];
+    const option = group.options.find((o) => o.label === label);
+    if (option?.image) {
+      const idx = product.images.indexOf(option.image);
+      if (idx !== -1) return idx;
+    }
+  }
+  return 0;
+}
+
 /**
  * Estado compartilhado de seleção de variantes + quantidade de um produto.
  * Usado tanto pela página de detalhe quanto pelo modal de visualização
@@ -15,9 +27,18 @@ export function useProductSelection(product: Product) {
     return initial;
   });
   const [quantity, setQuantity] = useState(1);
+  const [activeImage, setActiveImage] = useState(() => initialActiveImage(product, selectedByGroupId));
 
   const selectVariant = (groupId: string, optionLabel: string) => {
     setSelectedByGroupId((prev) => ({ ...prev, [groupId]: optionLabel }));
+
+    // se a opção escolhida tiver uma foto vinculada, a galeria acompanha a seleção
+    const group = product.variants?.find((g) => g.id === groupId);
+    const option = group?.options.find((o) => o.label === optionLabel);
+    if (option?.image) {
+      const idx = product.images.indexOf(option.image);
+      if (idx !== -1) setActiveImage(idx);
+    }
   };
 
   const increment = () => setQuantity((q) => Math.min(q + 1, 99));
@@ -47,5 +68,7 @@ export function useProductSelection(product: Product) {
     decrement,
     selectedVariants,
     allGroupsSelected,
+    activeImage,
+    setActiveImage,
   };
 }

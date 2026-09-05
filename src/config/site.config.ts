@@ -21,7 +21,7 @@ export const companyConfig: CompanyConfig = {
   tagline: 'Camisetas básicas premium para o seu dia a dia',
   businessType: 'catalog-categories',
   plan,
-  logo: '/img/adom-wordmark.png', // logotipo oficial do cliente (LOGOADOM.jpeg, fundo removido)
+  logo: '/img/LOGOADOM-removebg-crop.png', // arquivo oficial do cliente (fundo já removido), só cortada a margem vazia
   logoIcon: '/img/adom-icon-white.png', // só o "A" em branco — usado em espaços compactos (header mobile)
   favicon: '/favicon-192.png',
   currency: 'BRL',
@@ -32,15 +32,14 @@ export const companyConfig: CompanyConfig = {
   phone: '(83) 99182-6139',
 
   address: {
-    street: 'Rua Augusta, 1200',
-    neighborhood: 'Consolação',
-    city: 'São Paulo',
+    street: 'Rua Tiradentes, 21 - Metroshop',
+    neighborhood: 'Centro',
+    city: 'São Paulo', // TODO: confirmar cidade/estado reais da loja
     state: 'SP',
-    zip: '01304-001',
-    mapsUrl: 'https://maps.google.com/?q=Rua+Augusta+São+Paulo',
+    mapsUrl: 'https://maps.google.com/?q=Rua+Tiradentes+21+Centro',
     // Formato "output=embed" funciona sem precisar de chave de API do Google Maps —
     // basta trocar o texto da busca pelo endereço real do cliente.
-    mapsEmbedUrl: 'https://www.google.com/maps?q=Rua+Augusta,+São+Paulo,+SP&output=embed',
+    mapsEmbedUrl: 'https://www.google.com/maps?q=Rua+Tiradentes,+21,+Centro,+Metroshop&output=embed',
   },
 
   social: {
@@ -83,7 +82,7 @@ export const companyConfig: CompanyConfig = {
 
   hero: {
     eyebrow: 'Nova coleção',
-    title: 'Onde ser único é ser o primeiro. Seja ADOM.',
+    title: 'Onde ser único\né ser o primeiro\nSeja ADOM.',
     highlight: 'ADOM',
     subtitle:
       'Camisetas básicas premium, em algodão de verdade e cores que combinam com tudo. Escolha a sua e finalize o pedido direto pelo WhatsApp.',

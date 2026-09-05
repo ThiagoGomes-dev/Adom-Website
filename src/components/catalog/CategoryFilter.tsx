@@ -25,12 +25,12 @@ export function CategoryFilter({ categories, active, onChange }: CategoryFilterP
         Todos
       </button>
       {categories.map((category) => {
-        const isActive = active === category.id;
+        const isActive = active === category.slug;
         return (
           <button
             key={category.id}
             type="button"
-            onClick={() => onChange(category.id)}
+            onClick={() => onChange(category.slug)}
             className={cn(
               'flex shrink-0 items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors',
               isActive

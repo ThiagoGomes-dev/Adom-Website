@@ -89,10 +89,18 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
 function ProductModalContent({ product, onClose }: { product: Product; onClose: () => void }) {
   const config = useCompanyConfig();
   const { addItem, openCart } = useCart();
-  const [activeImage, setActiveImage] = useState(0);
   const [added, setAdded] = useState(false);
-  const { selectedByGroupId, selectVariant, quantity, increment, decrement, selectedVariants, allGroupsSelected } =
-    useProductSelection(product);
+  const {
+    selectedByGroupId,
+    selectVariant,
+    quantity,
+    increment,
+    decrement,
+    selectedVariants,
+    allGroupsSelected,
+    activeImage,
+    setActiveImage,
+  } = useProductSelection(product);
 
   const price = product.promoPrice ?? product.price;
   const discount = discountPercent(product.price, product.promoPrice);

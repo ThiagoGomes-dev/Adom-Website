@@ -2,9 +2,8 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { SortOption } from '@/types';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
+import { useCatalog } from '@/context/CatalogContext';
 import { useDebounce } from '@/hooks/useDebounce';
-import { products as demoProducts } from '@/data/demo/products';
-import { categories as demoCategories } from '@/data/demo/categories';
 import { SEO } from '@/components/layout/SEO';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { SearchBar } from '@/components/catalog/SearchBar';
@@ -20,6 +19,7 @@ const normalize = (text: string) =>
 
 export function ProductsPage() {
   const config = useCompanyConfig();
+  const { products: demoProducts, categories: demoCategories, loading } = useCatalog();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const search = searchParams.get('q') ?? '';
@@ -65,7 +65,7 @@ export function ProductsPage() {
     list.sort((a, b) => Number(b.available) - Number(a.available));
 
     return list;
-  }, [category, debouncedSearch, sort]);
+  }, [demoProducts, category, debouncedSearch, sort]);
 
   const clearFilters = () => setSearchParams({}, { replace: true });
 
@@ -90,13 +90,19 @@ export function ProductsPage() {
           <CategoryFilter categories={demoCategories} active={category} onChange={(v) => setParam('categoria', v)} />
         </div>
 
-        <p className="mt-6 text-sm text-ink-soft">
-          {filtered.length} {filtered.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
-        </p>
+        {loading ? (
+          <p className="mt-6 text-sm text-ink-soft">Carregando produtos...</p>
+        ) : (
+          <>
+            <p className="mt-6 text-sm text-ink-soft">
+              {filtered.length} {filtered.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
+            </p>
 
-        <div className="mt-4">
-          <ProductGrid products={filtered} onClearFilters={clearFilters} />
-        </div>
+            <div className="mt-4">
+              <ProductGrid products={filtered} onClearFilters={clearFilters} />
+            </div>
+          </>
+        )}
       </Section>
     </>
   );

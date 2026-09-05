@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -6,15 +6,43 @@ import { X, Minus, Plus, Trash2, ShoppingBag, MessageCircle } from 'lucide-react
 import { useCart } from '@/context/CartContext';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { buildCartWhatsAppLink } from '@/lib/whatsapp';
+import { useCepLookup, formatCep, isSameCity } from '@/hooks/useCepLookup';
+import { buildCartWhatsAppLink, type PaymentMethod } from '@/lib/whatsapp';
 import { formatPrice } from '@/lib/currency';
 import { Button } from '@/components/ui/Button';
+import { cn } from '@/lib/cn';
+
+const FIXED_SHIPPING_CITY = 'Campina Grande';
 
 export function CartDrawer() {
   const config = useCompanyConfig();
   const { items, removeItem, updateQuantity, clear, totalPrice, isOpen: open, closeCart: onClose } = useCart();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useScrollLock(open);
+
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [cep, setCep] = useState('');
+  const [street, setStreet] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [number, setNumber] = useState('');
+  const [reference, setReference] = useState('');
+  const [installments, setInstallments] = useState(1);
+  const cepDigits = cep.replace(/\D/g, '');
+  const cepLookup = useCepLookup(cep);
+  const fixedShipping = isSameCity(cepLookup.city, FIXED_SHIPPING_CITY);
+  const canFinalize =
+    Boolean(paymentMethod) &&
+    cepDigits.length === 8 &&
+    street.trim() !== '' &&
+    neighborhood.trim() !== '' &&
+    number.trim() !== '';
+
+  // preenche rua/bairro sozinhos quando o CEP resolve — só se a pessoa ainda não tiver digitado nada
+  useEffect(() => {
+    if (cepLookup.street && !street) setStreet(cepLookup.street);
+    if (cepLookup.neighborhood && !neighborhood) setNeighborhood(cepLookup.neighborhood);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cepLookup.street, cepLookup.neighborhood]);
 
   useEffect(() => {
     if (!open) return;
@@ -26,7 +54,17 @@ export function CartDrawer() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
-  const whatsappHref = buildCartWhatsAppLink(config.whatsapp, items, config.businessName);
+  const whatsappHref = buildCartWhatsAppLink(config.whatsapp, items, config.businessName, {
+    cep,
+    city: cepLookup.city,
+    fixedShipping,
+    street,
+    neighborhood,
+    number,
+    reference,
+    paymentMethod: paymentMethod ?? undefined,
+    installments,
+  });
 
   return createPortal(
     <AnimatePresence>
@@ -144,6 +182,139 @@ export function CartDrawer() {
                   <button type="button" onClick={clear} className="mt-4 text-xs font-medium text-ink-soft underline hover:text-ink">
                     Esvaziar carrinho
                   </button>
+
+                  <div className="mt-5 space-y-4 border-t border-black/5 pt-4">
+                    <div>
+                      <p className="text-sm font-semibold text-ink">Forma de pagamento</p>
+                      <div className="mt-2 flex gap-2">
+                        {(['pix', 'credito'] as const).map((method) => (
+                          <button
+                            key={method}
+                            type="button"
+                            onClick={() => setPaymentMethod(method)}
+                            aria-pressed={paymentMethod === method}
+                            className={cn(
+                              'flex-1 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors',
+                              paymentMethod === method
+                                ? 'border-accent bg-accent/10 text-ink'
+                                : 'border-black/10 text-ink-soft hover:border-black/20 hover:text-ink',
+                            )}
+                          >
+                            {method === 'pix' ? 'Pix' : 'Cartão de crédito'}
+                          </button>
+                        ))}
+                      </div>
+                      {paymentMethod === 'credito' && (
+                        <div className="mt-3">
+                          <label htmlFor="cart-installments" className="text-sm font-semibold text-ink">
+                            Parcelas
+                          </label>
+                          <select
+                            id="cart-installments"
+                            value={installments}
+                            onChange={(e) => setInstallments(Number(e.target.value))}
+                            className="mt-2 w-full rounded-xl border border-black/10 bg-surface px-3.5 py-2.5 text-sm text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                          >
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
+                              <option key={n} value={n}>
+                                {n}x {n <= 2 ? 'sem juros' : 'com juros da maquininha'}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="mt-2 text-xs text-ink-soft">
+                            Até 2x sem juros. Acima disso, juros da maquininha — consulte no WhatsApp.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="cart-cep" className="text-sm font-semibold text-ink">
+                        CEP para entrega
+                      </label>
+                      <input
+                        id="cart-cep"
+                        type="text"
+                        inputMode="numeric"
+                        value={cep}
+                        onChange={(e) => setCep(formatCep(e.target.value))}
+                        placeholder="00000-000"
+                        maxLength={9}
+                        className="mt-2 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                      />
+                      {cepDigits.length === 8 && (
+                        <p className="mt-2 text-xs text-ink-soft">
+                          {cepLookup.loading
+                            ? 'Consultando CEP...'
+                            : cepLookup.notFound
+                              ? 'CEP não encontrado — confira e tente novamente.'
+                              : fixedShipping
+                                ? `Entrega em ${cepLookup.city}: frete fixo de R$ 12,00.`
+                                : cepLookup.city
+                                  ? `Entrega em ${cepLookup.city}: frete a consultar no WhatsApp.`
+                                  : null}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="cart-street" className="text-sm font-semibold text-ink">
+                        Rua
+                      </label>
+                      <input
+                        id="cart-street"
+                        type="text"
+                        value={street}
+                        onChange={(e) => setStreet(e.target.value)}
+                        placeholder="Nome da rua"
+                        className="mt-2 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2">
+                        <label htmlFor="cart-neighborhood" className="text-sm font-semibold text-ink">
+                          Bairro
+                        </label>
+                        <input
+                          id="cart-neighborhood"
+                          type="text"
+                          value={neighborhood}
+                          onChange={(e) => setNeighborhood(e.target.value)}
+                          placeholder="Nome do bairro"
+                          className="mt-2 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="cart-number" className="text-sm font-semibold text-ink">
+                          Número
+                        </label>
+                        <input
+                          id="cart-number"
+                          type="text"
+                          inputMode="numeric"
+                          value={number}
+                          onChange={(e) => setNumber(e.target.value)}
+                          placeholder="Nº"
+                          className="mt-2 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="cart-reference" className="text-sm font-semibold text-ink">
+                        Ponto de referência <span className="font-normal text-ink-soft">(opcional)</span>
+                      </label>
+                      <input
+                        id="cart-reference"
+                        type="text"
+                        value={reference}
+                        onChange={(e) => setReference(e.target.value)}
+                        placeholder="Ex: perto do mercado, casa azul..."
+                        className="mt-2 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-3 border-t border-black/5 px-5 py-5">
@@ -151,9 +322,15 @@ export function CartDrawer() {
                     <span className="font-semibold text-ink">Total</span>
                     <span className="font-display text-xl font-bold text-ink">{formatPrice(totalPrice)}</span>
                   </div>
-                  <Button href={whatsappHref} external variant="whatsapp" size="lg" fullWidth icon={<MessageCircle size={18} />}>
-                    Finalizar pelo WhatsApp
-                  </Button>
+                  {canFinalize ? (
+                    <Button href={whatsappHref} external variant="whatsapp" size="lg" fullWidth icon={<MessageCircle size={18} />}>
+                      Finalizar pelo WhatsApp
+                    </Button>
+                  ) : (
+                    <Button type="button" disabled variant="whatsapp" size="lg" fullWidth icon={<MessageCircle size={18} />}>
+                      Preencha pagamento e endereço
+                    </Button>
+                  )}
                   <p className="text-center text-xs text-ink-soft">
                     Você confirma o pagamento e a entrega diretamente com a gente pelo WhatsApp.
                   </p>

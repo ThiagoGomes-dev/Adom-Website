@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, ShoppingBag, Check } from 'lucide-react';
+import type { Product } from '@/types';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
+import { useCatalog } from '@/context/CatalogContext';
 import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
-import { products as demoProducts } from '@/data/demo/products';
-import { categories as demoCategories } from '@/data/demo/categories';
 import { formatPrice, discountPercent } from '@/lib/currency';
 import { SEO } from '@/components/layout/SEO';
 import { Container } from '@/components/ui/Container';
@@ -21,12 +21,14 @@ import { ProductGrid } from '@/components/catalog/ProductGrid';
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const config = useCompanyConfig();
+  const { products: demoProducts, categories: demoCategories, loading } = useCatalog();
   const product = demoProducts.find((p) => p.slug === slug);
 
   if (!config.features.showCatalog) return <Navigate to="/" replace />;
+  if (loading) return null;
   if (!product) return <Navigate to="/produtos" replace />;
 
-  const category = demoCategories.find((c) => c.id === product.category);
+  const category = demoCategories.find((c) => c.slug === product.category);
   const related = demoProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   return (
@@ -39,16 +41,24 @@ function ProductDetailContent({
   categoryName,
   related,
 }: {
-  product: (typeof demoProducts)[number];
+  product: Product;
   categoryName?: string;
-  related: typeof demoProducts;
+  related: Product[];
 }) {
   const config = useCompanyConfig();
   const { addItem, openCart } = useCart();
-  const [activeImage, setActiveImage] = useState(0);
   const [added, setAdded] = useState(false);
-  const { selectedByGroupId, selectVariant, quantity, increment, decrement, selectedVariants, allGroupsSelected } =
-    useProductSelection(product);
+  const {
+    selectedByGroupId,
+    selectVariant,
+    quantity,
+    increment,
+    decrement,
+    selectedVariants,
+    allGroupsSelected,
+    activeImage,
+    setActiveImage,
+  } = useProductSelection(product);
 
   const price = product.promoPrice ?? product.price;
   const discount = discountPercent(product.price, product.promoPrice);

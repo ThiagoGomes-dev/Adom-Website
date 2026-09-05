@@ -38,7 +38,7 @@ export default {
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Sora"', '"Plus Jakarta Sans"', 'ui-sans-serif', 'sans-serif'],
+        display: ['"Jost"', '"Plus Jakarta Sans"', 'ui-sans-serif', 'sans-serif'],
       },
       borderRadius: {
         brand: 'var(--radius)',
