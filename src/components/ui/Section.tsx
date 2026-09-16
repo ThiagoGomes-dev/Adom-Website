@@ -18,7 +18,7 @@ export function Section({ children, className, containerClassName, id, tone = 's
     <section
       id={id}
       className={cn(
-        'scroll-mt-20 py-16 sm:py-20 lg:py-28',
+        'scroll-mt-20 py-7 sm:py-10 lg:py-14',
         tone === 'alt' ? 'bg-surface-alt' : 'bg-surface',
         className,
       )}

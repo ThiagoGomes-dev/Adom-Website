@@ -1,35 +1,28 @@
-import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { SEO } from '@/components/layout/SEO';
 import { Hero } from '@/components/sections/Hero';
 import { MarqueeBanner } from '@/components/sections/MarqueeBanner';
-import { FeaturedProducts } from '@/components/sections/FeaturedProducts';
+import { CategoryShowcase } from '@/components/sections/CategoryShowcase';
+import { CategoryGrid } from '@/components/sections/CategoryGrid';
+import { NewArrivals } from '@/components/sections/NewArrivals';
 import { HighlightQuote } from '@/components/sections/HighlightQuote';
-import { ServicesSection } from '@/components/sections/ServicesSection';
-import { Gallery } from '@/components/sections/Gallery';
 import { Testimonials } from '@/components/sections/Testimonials';
-import { CTASection } from '@/components/sections/CTASection';
 
 /**
- * Home / landing page. A ordem das seções segue o fluxo recomendado para
- * conversão (Hero → Faixa animada → Produtos/Serviços → Frase de destaque →
- * Galeria → Depoimentos → CTA).
- * Cada seção se auto-oculta quando a feature correspondente está desligada
- * em `companyConfig`.
+ * Home / landing page. Ordem: Hero → Faixa animada → vitrine por categoria →
+ * "compre por categoria" → novidades → frase de destaque → depoimentos.
+ * Cada seção se auto-oculta quando não há dados (catálogo vazio, sem categorias etc.).
  */
 export function HomePage() {
-  const config = useCompanyConfig();
-
   return (
     <>
       <SEO />
       <Hero />
       <MarqueeBanner />
-      <FeaturedProducts />
+      <CategoryShowcase />
+      <CategoryGrid />
+      <NewArrivals />
       <HighlightQuote />
-      <ServicesSection limit={3} />
-      {!config.pages.gallery && <Gallery />}
       <Testimonials />
-      <CTASection />
     </>
   );
 }

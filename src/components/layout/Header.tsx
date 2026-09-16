@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Menu, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
-import { buildNavItems } from '@/config/navigation';
+import { useCatalog } from '@/context/CatalogContext';
+import { buildCategoryNavItems } from '@/config/navigation';
 import { Container } from '@/components/ui/Container';
 import { CartButton } from '@/components/cart/CartButton';
 import { CartDrawer } from '@/components/cart/CartDrawer';
@@ -12,7 +13,10 @@ import { cn } from '@/lib/cn';
 
 export function Header() {
   const config = useCompanyConfig();
-  const navItems = buildNavItems(config);
+  const { categories } = useCatalog();
+  const navItems = buildCategoryNavItems(categories);
+  const [searchParams] = useSearchParams();
+  const activeCategory = searchParams.get('categoria');
   const [mobileOpen, setMobileOpen] = useState(false);
   const showCart = config.features.showCatalog && config.pages.products;
 
@@ -45,21 +49,18 @@ export function Header() {
           </motion.span>
         </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Navegação principal">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              end={item.href === '/'}
-              className={({ isActive }) =>
-                cn(
-                  'text-xs font-semibold uppercase tracking-[0.18em] transition-colors',
-                  isActive ? 'text-white' : 'text-white/55 hover:text-white',
-                )
-              }
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Categorias">
+          {categories.map((category) => (
+            <Link
+              key={category.id}
+              to={`/produtos?categoria=${category.slug}`}
+              className={cn(
+                'text-xs font-semibold uppercase tracking-[0.18em] transition-colors',
+                activeCategory === category.slug ? 'text-white' : 'text-white/55 hover:text-white',
+              )}
             >
-              {item.label}
-            </NavLink>
+              {category.name}
+            </Link>
           ))}
         </nav>
 

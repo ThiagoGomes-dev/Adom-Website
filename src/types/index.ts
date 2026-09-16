@@ -138,6 +138,8 @@ export interface HeroContent {
   secondaryCta?: CtaButton;
   image?: string;
   imageAlt?: string;
+  /** Quando houver mais de uma imagem, o Hero exibe um carrossel de fundo (crossfade automático). */
+  images?: string[];
 }
 
 export interface Benefit {
@@ -170,6 +172,8 @@ export interface CompanyConfig {
   favicon?: string;
   whatsapp: string; // somente dígitos, com DDI. ex: 5511999998888
   whatsappDisplay?: string; // ex: (11) 99999-8888
+  /** Link de pagamento (ex: Mercado Pago) incluído na mensagem de finalização do pedido pelo WhatsApp. */
+  paymentLink?: string;
   email?: string;
   phone?: string;
   address?: AddressInfo;
@@ -230,6 +234,8 @@ export interface Category {
   name: string;
   slug: string;
   icon?: string;
+  /** Imagem de capa cadastrada no admin — usada na grade "compre por categoria". */
+  image?: string;
 }
 
 export type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'name-asc' | 'newest';

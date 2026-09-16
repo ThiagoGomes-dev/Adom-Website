@@ -1,4 +1,4 @@
-import type { CompanyConfig, NavItem } from '@/types';
+import type { Category, CompanyConfig, NavItem } from '@/types';
 
 /**
  * Monta o menu de navegação dinamicamente a partir das páginas/recursos
@@ -25,4 +25,16 @@ export function buildNavItems(config: CompanyConfig): NavItem[] {
   }
 
   return items;
+}
+
+/**
+ * Menu principal do Header/MobileMenu para o modelo "catálogo por categoria":
+ * uma entrada por categoria cadastrada no admin, em vez de páginas fixas —
+ * quem cadastra a categoria no admin já reflete no menu do site.
+ */
+export function buildCategoryNavItems(categories: Category[]): NavItem[] {
+  return categories.map((category) => ({
+    label: category.name,
+    href: `/produtos?categoria=${category.slug}`,
+  }));
 }

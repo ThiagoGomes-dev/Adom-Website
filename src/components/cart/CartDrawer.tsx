@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Minus, Plus, Trash2, ShoppingBag, MessageCircle } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, MessageCircle, Receipt } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { useScrollLock } from '@/hooks/useScrollLock';
@@ -54,17 +54,23 @@ export function CartDrawer() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
-  const whatsappHref = buildCartWhatsAppLink(config.whatsapp, items, config.businessName, {
-    cep,
-    city: cepLookup.city,
-    fixedShipping,
-    street,
-    neighborhood,
-    number,
-    reference,
-    paymentMethod: paymentMethod ?? undefined,
-    installments,
-  });
+  const whatsappHref = buildCartWhatsAppLink(
+    config.whatsapp,
+    items,
+    config.businessName,
+    {
+      cep,
+      city: cepLookup.city,
+      fixedShipping,
+      street,
+      neighborhood,
+      number,
+      reference,
+      paymentMethod: paymentMethod ?? undefined,
+      installments,
+    },
+    config.paymentLink,
+  );
 
   return createPortal(
     <AnimatePresence>
@@ -324,16 +330,20 @@ export function CartDrawer() {
                   </div>
                   {canFinalize ? (
                     <Button href={whatsappHref} external variant="whatsapp" size="lg" fullWidth icon={<MessageCircle size={18} />}>
-                      Finalizar pelo WhatsApp
+                      Finalizar Compra
                     </Button>
                   ) : (
                     <Button type="button" disabled variant="whatsapp" size="lg" fullWidth icon={<MessageCircle size={18} />}>
                       Preencha pagamento e endereço
                     </Button>
                   )}
-                  <p className="text-center text-xs text-ink-soft">
-                    Você confirma o pagamento e a entrega diretamente com a gente pelo WhatsApp.
-                  </p>
+                  <div className="flex items-start gap-2 rounded-xl bg-accent/10 p-3 text-xs text-ink">
+                    <Receipt size={16} className="mt-0.5 shrink-0 text-accent" />
+                    <p>
+                      Você vai receber o link de pagamento no WhatsApp. Pague o valor do pedido e envie o
+                      comprovante na conversa — assim que recebermos, separamos seu pedido para envio ou retirada.
+                    </p>
+                  </div>
                 </div>
               </>
             )}

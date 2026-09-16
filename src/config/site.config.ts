@@ -28,6 +28,7 @@ export const companyConfig: CompanyConfig = {
 
   whatsapp: '5583991826139',
   whatsappDisplay: '(83) 99182-6139',
+  paymentLink: 'https://link.mercadopago.com.br/siteadom',
   email: 'contato@adom.com.br',
   phone: '(83) 99182-6139',
 
@@ -90,6 +91,7 @@ export const companyConfig: CompanyConfig = {
     secondaryCta: { label: 'Falar no WhatsApp', action: 'whatsapp' },
     image: '/img/hero-combo-wide.jpg',
     imageAlt: 'Camisetas ADOM em exposição na loja, sob o letreiro da marca',
+    images: ['/img/imagem-fundo01.jpeg', '/img/imagem-fundo02.jpeg'],
   },
 
   marqueeItems: [

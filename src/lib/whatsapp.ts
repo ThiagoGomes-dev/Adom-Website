@@ -61,7 +61,12 @@ export interface CheckoutInfo {
  * forma de pagamento escolhidos no carrinho. É o coração do fluxo
  * "adicionar ao carrinho -> finalizar pelo WhatsApp".
  */
-export function buildCartMessage(items: CartItem[], businessName: string, checkout?: CheckoutInfo): string {
+export function buildCartMessage(
+  items: CartItem[],
+  businessName: string,
+  checkout?: CheckoutInfo,
+  paymentLink?: string,
+): string {
   const lines = [`Olá, ${businessName}! Gostaria de finalizar este pedido:`, ''];
 
   items.forEach((item, index) => {
@@ -100,7 +105,16 @@ export function buildCartMessage(items: CartItem[], businessName: string, checko
     }
   }
 
-  lines.push('', 'Poderiam confirmar disponibilidade e finalizar o pedido?');
+  if (paymentLink) {
+    lines.push(
+      '',
+      `Para finalizar, realize o pagamento neste link: ${paymentLink}`,
+      `Digite o valor total do pedido (${formatPrice(total)}) e envie o comprovante aqui na conversa.`,
+      'Assim que recebermos o comprovante, já separamos seu pedido para envio ou deixamos pronto para retirada no local.',
+    );
+  } else {
+    lines.push('', 'Poderiam confirmar disponibilidade e finalizar o pedido?');
+  }
 
   return lines.join('\n');
 }
@@ -111,8 +125,9 @@ export function buildCartWhatsAppLink(
   items: CartItem[],
   businessName: string,
   checkout?: CheckoutInfo,
+  paymentLink?: string,
 ): string {
-  return generateWhatsAppLink(phone, buildCartMessage(items, businessName, checkout));
+  return generateWhatsAppLink(phone, buildCartMessage(items, businessName, checkout, paymentLink));
 }
 
 /** Mensagem de orçamento genérico (sem produto específico). */

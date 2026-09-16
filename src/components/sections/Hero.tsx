@@ -1,6 +1,6 @@
-import { useMemo, useRef, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { ArrowRight, MessageCircle, Sparkles, Star } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { resolveCta } from '@/lib/cta';
 import { Button } from '@/components/ui/Button';
@@ -83,6 +83,41 @@ function HeroParticles() {
   );
 }
 
+const HERO_CAROUSEL_INTERVAL_MS = 6000;
+
+/**
+ * Carrossel de imagens de fundo com crossfade. Cada imagem é ancorada ao topo
+ * (object-top) para que o corte por enquadramento — quando a foto é mais alta
+ * que a seção — sempre remova a parte de baixo (ex.: pernas) e nunca a cabeça.
+ */
+function HeroBackgroundCarousel({ images, alt }: { images: string[]; alt: string }) {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (images.length < 2) return;
+    const timer = setInterval(() => {
+      setIndex((i) => (i + 1) % images.length);
+    }, HERO_CAROUSEL_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [images.length]);
+
+  return (
+    <AnimatePresence>
+      <motion.img
+        key={images[index]}
+        src={images[index]}
+        alt={alt}
+        className="absolute inset-0 h-full w-full object-cover object-top"
+        fetchPriority="high"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 1.2, ease: EASE_EXPO }}
+      />
+    </AnimatePresence>
+  );
+}
+
 export function Hero() {
   const config = useCompanyConfig();
   const { hero } = config;
@@ -93,33 +128,39 @@ export function Hero() {
 
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
-  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.18]);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, 60]);
   const contentOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
   return (
-    <section ref={sectionRef} className="relative flex min-h-screen items-center justify-center overflow-hidden bg-ink">
-      {/* Imagem de fundo em tela cheia com leve zoom contínuo no scroll (efeito Ken Burns) */}
-      {hero.image && (
+    <section ref={sectionRef} className="relative flex min-h-[52vh] items-center justify-center overflow-hidden bg-ink sm:min-h-[62vh]">
+      {/* Imagem(ns) de fundo em tela cheia com leve zoom contínuo no scroll (efeito Ken Burns) */}
+      {hero.images && hero.images.length > 1 ? (
         <motion.div className="absolute inset-0" style={{ scale: bgScale }}>
-          <img
-            src={hero.image}
-            alt={hero.imageAlt ?? config.businessName}
-            className="h-full w-full object-cover"
-            fetchPriority="high"
-          />
+          <HeroBackgroundCarousel images={hero.images} alt={hero.imageAlt ?? config.businessName} />
         </motion.div>
+      ) : (
+        (hero.images?.[0] ?? hero.image) && (
+          <motion.div className="absolute inset-0" style={{ scale: bgScale }}>
+            <img
+              src={hero.images?.[0] ?? hero.image}
+              alt={hero.imageAlt ?? config.businessName}
+              className="h-full w-full object-cover object-top"
+              fetchPriority="high"
+            />
+          </motion.div>
+        )
       )}
 
       {/* Overlay escuro uniforme para garantir contraste do texto centralizado sobre a foto */}
-      <div className="absolute inset-0 bg-ink/70" />
+      <div className="absolute inset-0 bg-ink/55" />
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/40 to-ink/60" />
 
       {/* Poeira dourada flutuando sobre a foto, em loop — toque de elegância minimalista */}
       <HeroParticles />
 
       <motion.div style={{ y: contentY, opacity: contentOpacity }} className="relative z-10 w-full">
-        <Container className="flex flex-col items-center px-6 py-24 text-center sm:py-28 lg:py-32">
+        <Container className="flex flex-col items-center px-6 py-16 text-center sm:py-20 lg:py-24">
           {hero.eyebrow && (
             <motion.span
               initial={{ opacity: 0, y: -12 }}
@@ -136,7 +177,7 @@ export function Hero() {
             initial="hidden"
             animate="visible"
             variants={titleContainer}
-            className="mt-8 max-w-4xl text-balance font-display text-5xl font-medium uppercase leading-[1.18] tracking-normal text-white sm:text-6xl lg:text-7xl"
+            className="mt-6 max-w-4xl text-balance font-display text-3xl font-medium uppercase leading-[1.18] tracking-normal text-white sm:text-4xl lg:text-5xl"
           >
             {lines.map((line, li) => (
               <span key={li} className="block">
@@ -166,7 +207,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.55, ease: EASE_EXPO }}
-            className="mt-8 max-w-md text-balance text-base leading-relaxed text-white/70 sm:text-lg"
+            className="mt-6 max-w-md text-balance text-base leading-relaxed text-white/70 sm:text-lg"
           >
             {hero.subtitle}
           </motion.p>
@@ -175,7 +216,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.7, ease: EASE_EXPO }}
-            className="mt-10 flex flex-col items-center gap-4"
+            className="mt-8 flex flex-col items-center gap-4"
           >
             <motion.span whileHover={{ scale: 1.035 }} whileTap={{ scale: 0.97 }} className="inline-block">
               <Button
@@ -209,7 +250,7 @@ export function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.9 }}
-              className="mt-10 flex items-center gap-2 text-white/80"
+              className="mt-8 flex items-center gap-2 text-white/80"
             >
               <div className="flex" aria-hidden="true">
                 {Array.from({ length: 5 }).map((_, i) => (
