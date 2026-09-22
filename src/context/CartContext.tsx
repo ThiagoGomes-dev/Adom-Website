@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CartItem, Product } from '@/types';
+import { isOutOfStock } from '@/lib/stock';
 
 const STORAGE_KEY = 'cart:v1';
 
@@ -61,6 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addItem = useCallback(({ product, selectedVariants, quantity }: AddToCartInput) => {
+    if (isOutOfStock(product)) return;
     const cartItemId = buildCartItemId(product.id, selectedVariants);
 
     setItems((prev) => {

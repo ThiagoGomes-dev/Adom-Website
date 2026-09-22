@@ -8,6 +8,7 @@ import { useCatalog } from '@/context/CatalogContext';
 import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
 import { formatPrice, discountPercent } from '@/lib/currency';
+import { isOutOfStock, outOfStockLabel } from '@/lib/stock';
 import { SEO } from '@/components/layout/SEO';
 import { Container } from '@/components/ui/Container';
 import { Section, SectionHeading } from '@/components/ui/Section';
@@ -62,7 +63,8 @@ function ProductDetailContent({
 
   const price = product.promoPrice ?? product.price;
   const discount = discountPercent(product.price, product.promoPrice);
-  const canBuy = product.available && allGroupsSelected;
+  const outOfStock = isOutOfStock(product);
+  const canBuy = !outOfStock && allGroupsSelected;
 
   const handleAddToCart = () => {
     addItem({ product, selectedVariants, quantity });
@@ -128,7 +130,7 @@ function ProductDetailContent({
                 {categoryName && <Badge tone="muted">{categoryName}</Badge>}
                 {product.featured && <Badge tone="dark">Destaque</Badge>}
                 {config.features.showPromotions && discount && <Badge tone="accent">-{discount}% OFF</Badge>}
-                {!product.available && <Badge tone="muted">Indisponível</Badge>}
+                {outOfStock && <Badge tone="muted">{outOfStockLabel(product)}</Badge>}
               </div>
               <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">{product.name}</h1>
               {config.features.showPrices && (
@@ -181,7 +183,7 @@ function ProductDetailContent({
               </Button>
             ) : (
               <Button type="button" disabled variant="primary" size="lg" fullWidth icon={<ShoppingBag size={18} />}>
-                {product.available ? 'Selecione as opções' : 'Indisponível no momento'}
+                {outOfStock ? outOfStockLabel(product) : 'Selecione as opções'}
               </Button>
             )}
           </div>

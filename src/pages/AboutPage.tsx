@@ -11,7 +11,7 @@ export function AboutPage() {
 
   return (
     <>
-      <SEO title="Sobre" description={config.aboutText?.slice(0, 155)} />
+      <SEO title="Sobre" description={config.aboutText?.split('\n\n')[0]?.slice(0, 155)} />
       <Section tone="alt" className="!pb-0">
         <div className="text-center">
           <span className="text-xs font-semibold uppercase tracking-widest text-accent">Nossa história</span>

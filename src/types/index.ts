@@ -133,7 +133,7 @@ export interface HeroContent {
   eyebrow?: string;
   title: string;
   highlight?: string;
-  subtitle: string;
+  subtitle?: string;
   primaryCta: CtaButton;
   secondaryCta?: CtaButton;
   image?: string;
@@ -188,6 +188,8 @@ export interface CompanyConfig {
   highlightQuote?: string;
   aboutTitle?: string;
   aboutText?: string;
+  /** Linha de destaque curta exibida ao final do texto (ex: um slogan de fechamento). */
+  aboutClosing?: string;
   aboutImage?: string;
   features: FeatureFlags;
   pages: PagesConfig;
@@ -225,6 +227,8 @@ export interface Product {
   category: string; // Category['id']
   variants?: ProductVariantGroup[];
   available: boolean;
+  /** Quantidade em estoque, cadastrada no admin. Quando <= 0, o produto aparece no site mas fica bloqueado para compra. */
+  stockQuantity?: number;
   featured?: boolean;
   tags?: string[];
 }

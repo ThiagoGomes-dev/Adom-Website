@@ -4,6 +4,7 @@ import type { SortOption } from '@/types';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { useCatalog } from '@/context/CatalogContext';
 import { useDebounce } from '@/hooks/useDebounce';
+import { isOutOfStock } from '@/lib/stock';
 import { SEO } from '@/components/layout/SEO';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { SearchBar } from '@/components/catalog/SearchBar';
@@ -61,8 +62,8 @@ export function ProductsPage() {
         list.sort((a, b) => Number(b.featured) - Number(a.featured));
     }
 
-    // produtos indisponíveis sempre por último, sem sumir da vitrine
-    list.sort((a, b) => Number(b.available) - Number(a.available));
+    // produtos esgotados/indisponíveis sempre por último, sem sumir da vitrine
+    list.sort((a, b) => Number(!isOutOfStock(b)) - Number(!isOutOfStock(a)));
 
     return list;
   }, [demoProducts, category, debouncedSearch, sort]);

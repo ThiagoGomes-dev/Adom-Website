@@ -6,10 +6,11 @@ import { CategoryGrid } from '@/components/sections/CategoryGrid';
 import { NewArrivals } from '@/components/sections/NewArrivals';
 import { HighlightQuote } from '@/components/sections/HighlightQuote';
 import { Testimonials } from '@/components/sections/Testimonials';
+import { AboutSection } from '@/components/sections/AboutSection';
 
 /**
  * Home / landing page. Ordem: Hero → Faixa animada → vitrine por categoria →
- * "compre por categoria" → novidades → frase de destaque → depoimentos.
+ * "compre por categoria" → novidades → frase de destaque → depoimentos → sobre.
  * Cada seção se auto-oculta quando não há dados (catálogo vazio, sem categorias etc.).
  */
 export function HomePage() {
@@ -23,6 +24,7 @@ export function HomePage() {
       <NewArrivals />
       <HighlightQuote />
       <Testimonials />
+      <AboutSection />
     </>
   );
 }

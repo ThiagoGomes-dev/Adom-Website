@@ -133,7 +133,7 @@ export function Hero() {
   const contentOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
   return (
-    <section ref={sectionRef} className="relative flex min-h-[52vh] items-center justify-center overflow-hidden bg-ink sm:min-h-[62vh]">
+    <section ref={sectionRef} className="relative flex min-h-[52vh] items-center justify-center overflow-hidden bg-ink sm:min-h-[62vh] lg:min-h-[78vh] xl:min-h-[86vh]">
       {/* Imagem(ns) de fundo em tela cheia com leve zoom contínuo no scroll (efeito Ken Burns) */}
       {hero.images && hero.images.length > 1 ? (
         <motion.div className="absolute inset-0" style={{ scale: bgScale }}>
@@ -203,14 +203,16 @@ export function Hero() {
             ))}
           </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.55, ease: EASE_EXPO }}
-            className="mt-6 max-w-md text-balance text-base leading-relaxed text-white/70 sm:text-lg"
-          >
-            {hero.subtitle}
-          </motion.p>
+          {hero.subtitle && (
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.55, ease: EASE_EXPO }}
+              className="mt-6 max-w-md text-balance text-base leading-relaxed text-white/70 sm:text-lg"
+            >
+              {hero.subtitle}
+            </motion.p>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}

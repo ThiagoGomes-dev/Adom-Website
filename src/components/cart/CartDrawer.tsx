@@ -221,14 +221,18 @@ export function CartDrawer() {
                             onChange={(e) => setInstallments(Number(e.target.value))}
                             className="mt-2 w-full rounded-xl border border-black/10 bg-surface px-3.5 py-2.5 text-sm text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                           >
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
-                              <option key={n} value={n}>
-                                {n}x {n <= 2 ? 'sem juros' : 'com juros da maquininha'}
-                              </option>
-                            ))}
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => {
+                              const hasInterest = n > 6;
+                              const installmentTotal = hasInterest ? totalPrice * 1.05 : totalPrice;
+                              return (
+                                <option key={n} value={n}>
+                                  {n}x de {formatPrice(installmentTotal / n)} {hasInterest ? '(5% de juros)' : 'sem juros'}
+                                </option>
+                              );
+                            })}
                           </select>
                           <p className="mt-2 text-xs text-ink-soft">
-                            Até 2x sem juros. Acima disso, juros da maquininha — consulte no WhatsApp.
+                            Em até 6x sem juros. De 7x a 12x, juros de 5%.
                           </p>
                         </div>
                       )}

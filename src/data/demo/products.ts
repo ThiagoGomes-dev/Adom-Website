@@ -170,6 +170,7 @@ export const demoProducts: Product[] = [
       },
     ],
     available: true,
+    stockQuantity: 0,
     featured: true,
     tags: ['Lançamento'],
   },

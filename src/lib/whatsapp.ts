@@ -100,8 +100,12 @@ export function buildCartMessage(
     lines.push('', `Forma de pagamento: ${checkout.paymentMethod === 'credito' ? 'Cartão de crédito' : 'Pix'}`);
     if (checkout.paymentMethod === 'credito') {
       const installments = checkout.installments ?? 1;
-      lines.push(`Parcelamento: ${installments}x${installments <= 2 ? ' sem juros' : ' com juros da maquininha'}`);
-      lines.push('Até 2x sem juros. Acima disso, juros da maquininha — a consultar no WhatsApp.');
+      const hasInterest = installments > 6;
+      const installmentTotal = hasInterest ? total * 1.05 : total;
+      lines.push(
+        `Parcelamento: ${installments}x de ${formatPrice(installmentTotal / installments)}${hasInterest ? ' (com 5% de juros)' : ' sem juros'}`,
+      );
+      lines.push('Em até 6x sem juros. De 7x a 12x, juros de 5%.');
     }
   }
 

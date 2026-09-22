@@ -33,14 +33,14 @@ export const companyConfig: CompanyConfig = {
   phone: '(83) 99182-6139',
 
   address: {
-    street: 'Rua Tiradentes, 21 - Metroshop',
-    neighborhood: 'Centro',
-    city: 'São Paulo', // TODO: confirmar cidade/estado reais da loja
-    state: 'SP',
-    mapsUrl: 'https://maps.google.com/?q=Rua+Tiradentes+21+Centro',
+    street: 'Rua Tiradentes, 21',
+    neighborhood: 'Centro (Metroshop)',
+    city: 'Campina Grande',
+    state: 'PB',
+    mapsUrl: 'https://maps.google.com/?q=Rua+Tiradentes+21+Centro+Campina+Grande+PB',
     // Formato "output=embed" funciona sem precisar de chave de API do Google Maps —
     // basta trocar o texto da busca pelo endereço real do cliente.
-    mapsEmbedUrl: 'https://www.google.com/maps?q=Rua+Tiradentes,+21,+Centro,+Metroshop&output=embed',
+    mapsEmbedUrl: 'https://www.google.com/maps?q=Rua+Tiradentes,+21,+Centro,+Campina+Grande,+PB&output=embed',
   },
 
   social: {
@@ -49,8 +49,8 @@ export const companyConfig: CompanyConfig = {
   },
 
   hours: [
-    { day: 'Segunda a sexta', hours: '10h às 20h' },
-    { day: 'Sábado', hours: '10h às 18h' },
+    { day: 'Segunda a sexta', hours: '9h às 18h' },
+    { day: 'Sábado', hours: '9h às 14h' },
     { day: 'Domingo', hours: 'Fechado' },
   ],
 
@@ -85,8 +85,6 @@ export const companyConfig: CompanyConfig = {
     eyebrow: 'Nova coleção',
     title: 'Onde ser único\né ser o primeiro\nSeja ADOM.',
     highlight: 'ADOM',
-    subtitle:
-      'Camisetas básicas premium, em algodão de verdade e cores que combinam com tudo. Escolha a sua e finalize o pedido direto pelo WhatsApp.',
     primaryCta: { label: 'Ver camisetas', action: 'products' },
     secondaryCta: { label: 'Falar no WhatsApp', action: 'whatsapp' },
     image: '/img/hero-combo-wide.jpg',
@@ -95,11 +93,8 @@ export const companyConfig: CompanyConfig = {
   },
 
   marqueeItems: [
-    'FRETE PARA TODO O BRASIL',
-    'COMPRE PELO WHATSAPP',
-    'TROCA GRÁTIS EM 7 DIAS',
-    'NOVA COLEÇÃO TODA SEMANA',
-    'PARCELAMENTO EM ATÉ 6X',
+    'FRETE GRÁTIS A PARTIR DE R$ 399,90',
+    'DIVIDIMOS EM ATÉ 6X SEM JUROS',
   ],
   highlightQuote: 'Onde ser único é ser o primeiro. Seja ADOM.',
 
@@ -110,11 +105,18 @@ export const companyConfig: CompanyConfig = {
     { id: 'avaliacao', value: 4.8, label: 'avaliação média' },
   ],
 
-  aboutTitle: 'Camiseta boa é aquela que você esquece que está vestindo',
+  aboutTitle: 'Sobre a ADOM',
   aboutText:
-    'A ADOM nasceu para resolver um problema simples: achar a camiseta básica perfeita — tecido de verdade, caimento certo e cores que combinam com tudo. Em vez de um catálogo gigante e confuso, trabalhamos com uma curadoria enxuta, focada só no essencial, e um atendimento que trata cada pedido no WhatsApp como se fosse feito pessoalmente na loja.',
-  aboutImage: '/img/modelo2-crop.jpg',
+    'A ADOM nasceu para o homem que acredita que estilo está nos detalhes.\n\n' +
+    'Criamos peças que unem qualidade, conforto e sofisticação, com um design moderno e atemporal pensado para acompanhar diferentes momentos da rotina masculina.\n\n' +
+    'Nossa essência está na simplicidade bem-feita. Valorizamos tecidos selecionados, modelagens que proporcionam um bom caimento e acabamentos que fazem a diferença. Do básico essencial às peças que completam o visual, cada produto ADOM é desenvolvido para oferecer versatilidade, personalidade e elegância.\n\n' +
+    'Mais do que vestir, queremos representar um estilo de vida: autêntico, confiante e sem excessos.\n\n' +
+    'ADOM — para quem escolhe ser único.',
+  aboutClosing: 'Seja ADOM',
+  aboutImage: '/img/adom.png',
 
   features: resolveFeatures(plan, { showServices: false }),
-  pages: resolvePages(plan),
+  // Sobre virou uma seção dentro da própria home (antes do rodapé) em vez de
+  // página separada; Galeria e Contato não são usados neste site.
+  pages: resolvePages(plan, { about: false, gallery: false, contact: false }),
 };

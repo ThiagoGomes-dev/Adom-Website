@@ -7,6 +7,7 @@ import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
 import { formatPrice, discountPercent } from '@/lib/currency';
+import { isOutOfStock, outOfStockLabel } from '@/lib/stock';
 import { cn } from '@/lib/cn';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { Badge } from '@/components/ui/Badge';
@@ -49,6 +50,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
 
   const discount = discountPercent(product.price, product.promoPrice);
   const displayPrice = product.promoPrice ?? product.price;
+  const outOfStock = isOutOfStock(product);
 
   // grupo de "cor" ganha um seletor em bolinhas; os demais (tamanho, etc.) em pílulas de texto
   const colorGroup = product.variants?.find((g) => normalize(g.name).includes('cor'));
@@ -109,10 +111,10 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col gap-1.5">
           {product.featured && <Badge tone="dark">Destaque</Badge>}
           {config.features.showPromotions && discount && <Badge tone="accent">-{discount}%</Badge>}
-          {!product.available && <Badge tone="muted">Indisponível</Badge>}
+          {outOfStock && <Badge tone="muted">{outOfStockLabel(product)}</Badge>}
         </div>
 
-        {onQuickView && product.available && (
+        {onQuickView && !outOfStock && (
           <button
             type="button"
             onClick={() => onQuickView(product)}
@@ -185,7 +187,15 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           </div>
         ))}
 
-        {product.available && (
+        {outOfStock ? (
+          <button
+            type="button"
+            disabled
+            className="mt-3 inline-flex cursor-not-allowed items-center justify-center gap-1.5 rounded-full bg-ink/5 py-2 text-xs font-semibold text-ink-soft"
+          >
+            {outOfStockLabel(product)}
+          </button>
+        ) : (
           <button
             type="button"
             onClick={handleAddToCart}

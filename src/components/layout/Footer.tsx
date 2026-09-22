@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Instagram, Facebook, Phone, MapPin, Clock } from 'lucide-react';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { buildNavItems } from '@/config/navigation';
 import { Container } from '@/components/ui/Container';
@@ -63,14 +63,6 @@ export function Footer() {
               <li className="flex items-start gap-2.5 text-sm text-white/80">
                 <Phone size={16} className="mt-0.5 shrink-0 text-white/50" />
                 <span>{config.phone}</span>
-              </li>
-            )}
-            {config.email && (
-              <li className="flex items-start gap-2.5 text-sm text-white/80">
-                <Mail size={16} className="mt-0.5 shrink-0 text-white/50" />
-                <a href={`mailto:${config.email}`} className="break-all hover:text-white">
-                  {config.email}
-                </a>
               </li>
             )}
             {config.features.showAddress && config.address && (

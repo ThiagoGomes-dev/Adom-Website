@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { formatPrice, discountPercent } from '@/lib/currency';
+import { isOutOfStock, outOfStockLabel } from '@/lib/stock';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -104,6 +105,7 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
 
   const price = product.promoPrice ?? product.price;
   const discount = discountPercent(product.price, product.promoPrice);
+  const outOfStock = isOutOfStock(product);
 
   const handleAddToCart = () => {
     addItem({ product, selectedVariants, quantity });
@@ -142,7 +144,7 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
           <div className="flex flex-wrap items-center gap-2">
             {product.featured && <Badge tone="dark">Destaque</Badge>}
             {config.features.showPromotions && discount && <Badge tone="accent">-{discount}% OFF</Badge>}
-            {!product.available && <Badge tone="muted">Indisponível</Badge>}
+            {outOfStock && <Badge tone="muted">{outOfStockLabel(product)}</Badge>}
           </div>
           <h2 className="mt-2 font-display text-xl font-bold text-ink sm:text-2xl">{product.name}</h2>
           {config.features.showPrices && (
@@ -189,13 +191,13 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
           </motion.div>
         ) : (
           <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-            {product.available && allGroupsSelected ? (
+            {!outOfStock && allGroupsSelected ? (
               <Button onClick={handleAddToCart} variant="primary" size="lg" fullWidth icon={<ShoppingBag size={18} />}>
                 Adicionar ao carrinho
               </Button>
             ) : (
               <Button type="button" disabled variant="primary" size="lg" fullWidth icon={<ShoppingBag size={18} />}>
-                {product.available ? 'Selecione as opções' : 'Indisponível no momento'}
+                {outOfStock ? outOfStockLabel(product) : 'Selecione as opções'}
               </Button>
             )}
             <Button to={`/produtos/${product.slug}`} variant="secondary" size="lg" icon={<LinkIcon size={16} />}>

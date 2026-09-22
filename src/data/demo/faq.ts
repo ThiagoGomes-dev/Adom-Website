@@ -25,6 +25,6 @@ export const faq: FAQItem[] = [
   {
     id: 'f05',
     question: 'Quais as formas de pagamento?',
-    answer: 'Pix, cartão de crédito em até 6x sem juros e boleto. Tudo combinado diretamente com nosso time pelo WhatsApp.',
+    answer: 'Pix ou cartão de crédito em até 6x sem juros — de 7x a 12x com 5% de juros. Tudo combinado diretamente com nosso time pelo WhatsApp.',
   },
 ];

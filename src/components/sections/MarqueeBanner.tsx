@@ -11,7 +11,12 @@ export function MarqueeBanner() {
   const items = config.marqueeItems;
   if (!items?.length) return null;
 
-  const track = [...items, ...items];
+  // Repete o conteúdo várias vezes antes de duplicar para o loop — com poucos
+  // itens (ex: só 2 frases), a faixa ficava curta demais e sobrava um vão
+  // vazio em telas largas antes de recomeçar.
+  const MIN_REPEATS = 6;
+  const repeated = Array.from({ length: MIN_REPEATS }, () => items).flat();
+  const track = [...repeated, ...repeated];
 
   return (
     <div className="overflow-hidden border-y border-white/10 bg-ink py-3.5 sm:py-4">
