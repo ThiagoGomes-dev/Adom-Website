@@ -44,8 +44,8 @@ export const companyConfig: CompanyConfig = {
   },
 
   social: {
-    instagram: 'https://instagram.com/adom',
-    facebook: 'https://facebook.com/adom',
+    instagram: 'https://www.instagram.com/adomoficial1/',
+    facebook: 'https://www.facebook.com/share/1DNivmLH36/?mibextid=wwXIfr',
   },
 
   hours: [
