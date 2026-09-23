@@ -8,7 +8,7 @@ import { useCatalog } from '@/context/CatalogContext';
 import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
 import { formatPrice, discountPercent } from '@/lib/currency';
-import { isOutOfStock, outOfStockLabel } from '@/lib/stock';
+import { getComboStock, isOutOfStock, outOfStockLabel } from '@/lib/stock';
 import { SEO } from '@/components/layout/SEO';
 import { Container } from '@/components/ui/Container';
 import { Section, SectionHeading } from '@/components/ui/Section';
@@ -63,8 +63,13 @@ function ProductDetailContent({
 
   const price = product.promoPrice ?? product.price;
   const discount = discountPercent(product.price, product.promoPrice);
-  const outOfStock = isOutOfStock(product);
+  const outOfStock = isOutOfStock(product, selectedVariants);
   const canBuy = !outOfStock && allGroupsSelected;
+
+  const isOptionDisabled = (groupName: string) => (optionLabel: string) => {
+    const stock = getComboStock(product, { ...selectedVariants, [groupName]: optionLabel });
+    return stock !== undefined && stock <= 0;
+  };
 
   const handleAddToCart = () => {
     addItem({ product, selectedVariants, quantity });
@@ -130,7 +135,7 @@ function ProductDetailContent({
                 {categoryName && <Badge tone="muted">{categoryName}</Badge>}
                 {product.featured && <Badge tone="dark">Destaque</Badge>}
                 {config.features.showPromotions && discount && <Badge tone="accent">-{discount}% OFF</Badge>}
-                {outOfStock && <Badge tone="muted">{outOfStockLabel(product)}</Badge>}
+                {outOfStock && <Badge tone="muted">{outOfStockLabel(product, selectedVariants)}</Badge>}
               </div>
               <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">{product.name}</h1>
               {config.features.showPrices && (
@@ -151,6 +156,7 @@ function ProductDetailContent({
                 group={group}
                 selected={selectedByGroupId[group.id]}
                 onSelect={(label) => selectVariant(group.id, label)}
+                isOptionDisabled={isOptionDisabled(group.name)}
               />
             ))}
 
@@ -183,7 +189,7 @@ function ProductDetailContent({
               </Button>
             ) : (
               <Button type="button" disabled variant="primary" size="lg" fullWidth icon={<ShoppingBag size={18} />}>
-                {outOfStock ? outOfStockLabel(product) : 'Selecione as opções'}
+                {outOfStock ? outOfStockLabel(product, selectedVariants) : 'Selecione as opções'}
               </Button>
             )}
           </div>

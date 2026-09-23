@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { formatPrice, discountPercent } from '@/lib/currency';
-import { isOutOfStock, outOfStockLabel } from '@/lib/stock';
+import { getComboStock, isOutOfStock, outOfStockLabel } from '@/lib/stock';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -105,7 +105,12 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
 
   const price = product.promoPrice ?? product.price;
   const discount = discountPercent(product.price, product.promoPrice);
-  const outOfStock = isOutOfStock(product);
+  const outOfStock = isOutOfStock(product, selectedVariants);
+
+  const isOptionDisabled = (groupName: string) => (optionLabel: string) => {
+    const stock = getComboStock(product, { ...selectedVariants, [groupName]: optionLabel });
+    return stock !== undefined && stock <= 0;
+  };
 
   const handleAddToCart = () => {
     addItem({ product, selectedVariants, quantity });
@@ -144,7 +149,7 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
           <div className="flex flex-wrap items-center gap-2">
             {product.featured && <Badge tone="dark">Destaque</Badge>}
             {config.features.showPromotions && discount && <Badge tone="accent">-{discount}% OFF</Badge>}
-            {outOfStock && <Badge tone="muted">{outOfStockLabel(product)}</Badge>}
+            {outOfStock && <Badge tone="muted">{outOfStockLabel(product, selectedVariants)}</Badge>}
           </div>
           <h2 className="mt-2 font-display text-xl font-bold text-ink sm:text-2xl">{product.name}</h2>
           {config.features.showPrices && (
@@ -163,6 +168,7 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
             group={group}
             selected={selectedByGroupId[group.id]}
             onSelect={(label) => selectVariant(group.id, label)}
+            isOptionDisabled={isOptionDisabled(group.name)}
           />
         ))}
 
@@ -197,7 +203,7 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
               </Button>
             ) : (
               <Button type="button" disabled variant="primary" size="lg" fullWidth icon={<ShoppingBag size={18} />}>
-                {outOfStock ? outOfStockLabel(product) : 'Selecione as opções'}
+                {outOfStock ? outOfStockLabel(product, selectedVariants) : 'Selecione as opções'}
               </Button>
             )}
             <Button to={`/produtos/${product.slug}`} variant="secondary" size="lg" icon={<LinkIcon size={16} />}>

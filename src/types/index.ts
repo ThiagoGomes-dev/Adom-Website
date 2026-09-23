@@ -229,6 +229,15 @@ export interface Product {
   available: boolean;
   /** Quantidade em estoque, cadastrada no admin. Quando <= 0, o produto aparece no site mas fica bloqueado para compra. */
   stockQuantity?: number;
+  /**
+   * Estoque por combinação de variante (ex: Cor=Preta + Tamanho=P), quando o
+   * produto tem variação e o admin já distribuiu o estoque entre elas.
+   * `selection` usa o mesmo formato de `ProductSelection.selectedVariants`
+   * (nome do grupo -> rótulo da opção). Produto sem variação, ou ainda não
+   * distribuído no admin, simplesmente não tem este campo — nesse caso vale
+   * só `stockQuantity` acima.
+   */
+  variantStock?: { selection: Record<string, string>; stockQuantity: number }[];
   featured?: boolean;
   tags?: string[];
 }

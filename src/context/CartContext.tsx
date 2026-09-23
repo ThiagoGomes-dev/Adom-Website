@@ -62,7 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addItem = useCallback(({ product, selectedVariants, quantity }: AddToCartInput) => {
-    if (isOutOfStock(product)) return;
+    if (isOutOfStock(product, selectedVariants)) return;
     const cartItemId = buildCartItemId(product.id, selectedVariants);
 
     setItems((prev) => {
