@@ -237,7 +237,13 @@ export interface Product {
    * distribuído no admin, simplesmente não tem este campo — nesse caso vale
    * só `stockQuantity` acima.
    */
-  variantStock?: { selection: Record<string, string>; stockQuantity: number }[];
+  variantStock?: {
+    selection: Record<string, string>;
+    stockQuantity: number;
+    /** preço específico desta variação — ausente = herda price/promoPrice do produto */
+    price?: number;
+    promoPrice?: number;
+  }[];
   featured?: boolean;
   tags?: string[];
 }

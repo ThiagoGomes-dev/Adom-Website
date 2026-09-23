@@ -8,7 +8,7 @@ import { useCatalog } from '@/context/CatalogContext';
 import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
 import { formatPrice, discountPercent } from '@/lib/currency';
-import { getComboStock, isOutOfStock, outOfStockLabel } from '@/lib/stock';
+import { getComboStock, isOutOfStock, outOfStockLabel, resolvePrice } from '@/lib/stock';
 import { SEO } from '@/components/layout/SEO';
 import { Container } from '@/components/ui/Container';
 import { Section, SectionHeading } from '@/components/ui/Section';
@@ -61,8 +61,9 @@ function ProductDetailContent({
     setActiveImage,
   } = useProductSelection(product);
 
-  const price = product.promoPrice ?? product.price;
-  const discount = discountPercent(product.price, product.promoPrice);
+  const resolved = resolvePrice(product, selectedVariants);
+  const price = resolved.promoPrice ?? resolved.price;
+  const discount = discountPercent(resolved.price, resolved.promoPrice);
   const outOfStock = isOutOfStock(product, selectedVariants);
   const canBuy = !outOfStock && allGroupsSelected;
 
@@ -141,8 +142,8 @@ function ProductDetailContent({
               {config.features.showPrices && (
                 <div className="mt-3 flex items-baseline gap-3">
                   <span className="text-3xl font-bold text-ink">{formatPrice(price)}</span>
-                  {product.promoPrice && (
-                    <span className="text-base text-ink-soft line-through">{formatPrice(product.price)}</span>
+                  {resolved.promoPrice && (
+                    <span className="text-base text-ink-soft line-through">{formatPrice(resolved.price)}</span>
                   )}
                 </div>
               )}

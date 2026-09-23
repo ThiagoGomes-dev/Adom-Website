@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CartItem, Product } from '@/types';
-import { isOutOfStock } from '@/lib/stock';
+import { isOutOfStock, resolvePrice } from '@/lib/stock';
 
 const STORAGE_KEY = 'cart:v1';
 
@@ -72,13 +72,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
           item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + quantity } : item,
         );
       }
+      const resolved = resolvePrice(product, selectedVariants);
       const newItem: CartItem = {
         cartItemId,
         productId: product.id,
         slug: product.slug,
         name: product.name,
         image: product.images[0],
-        unitPrice: product.promoPrice ?? product.price,
+        unitPrice: resolved.promoPrice ?? resolved.price,
         selectedVariants,
         quantity,
       };

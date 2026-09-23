@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { formatPrice, discountPercent } from '@/lib/currency';
-import { getComboStock, isOutOfStock, outOfStockLabel } from '@/lib/stock';
+import { getComboStock, isOutOfStock, outOfStockLabel, resolvePrice } from '@/lib/stock';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -103,8 +103,9 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
     setActiveImage,
   } = useProductSelection(product);
 
-  const price = product.promoPrice ?? product.price;
-  const discount = discountPercent(product.price, product.promoPrice);
+  const resolved = resolvePrice(product, selectedVariants);
+  const price = resolved.promoPrice ?? resolved.price;
+  const discount = discountPercent(resolved.price, resolved.promoPrice);
   const outOfStock = isOutOfStock(product, selectedVariants);
 
   const isOptionDisabled = (groupName: string) => (optionLabel: string) => {
@@ -155,7 +156,7 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
           {config.features.showPrices && (
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-ink">{formatPrice(price)}</span>
-              {product.promoPrice && <span className="text-sm text-ink-soft line-through">{formatPrice(product.price)}</span>}
+              {resolved.promoPrice && <span className="text-sm text-ink-soft line-through">{formatPrice(resolved.price)}</span>}
             </div>
           )}
         </div>
