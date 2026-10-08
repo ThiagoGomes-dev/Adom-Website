@@ -140,6 +140,8 @@ export interface HeroContent {
   imageAlt?: string;
   /** Quando houver mais de uma imagem, o Hero exibe um carrossel de fundo (crossfade automático). */
   images?: string[];
+  /** Quando definido, substitui a(s) imagem(ns) de fundo por um vídeo em loop (autoplay, mudo). */
+  video?: string;
 }
 
 export interface Benefit {

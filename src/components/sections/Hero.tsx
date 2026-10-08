@@ -134,8 +134,22 @@ export function Hero() {
 
   return (
     <section ref={sectionRef} className="relative flex min-h-[52vh] items-center justify-center overflow-hidden bg-ink sm:min-h-[62vh] lg:min-h-[78vh] xl:min-h-[86vh]">
-      {/* Imagem(ns) de fundo em tela cheia com leve zoom contínuo no scroll (efeito Ken Burns) */}
-      {hero.images && hero.images.length > 1 ? (
+      {/* Fundo em tela cheia com leve zoom contínuo no scroll (efeito Ken Burns) */}
+      {hero.video ? (
+        <motion.div className="absolute inset-0" style={{ scale: bgScale }}>
+          <video
+            className="h-full w-full object-cover object-top"
+            src={hero.video}
+            poster={hero.images?.[0] ?? hero.image}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            aria-label={hero.imageAlt ?? config.businessName}
+          />
+        </motion.div>
+      ) : hero.images && hero.images.length > 1 ? (
         <motion.div className="absolute inset-0" style={{ scale: bgScale }}>
           <HeroBackgroundCarousel images={hero.images} alt={hero.imageAlt ?? config.businessName} />
         </motion.div>

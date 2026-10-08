@@ -90,6 +90,7 @@ export const companyConfig: CompanyConfig = {
     image: '/img/hero-combo-wide.jpg',
     imageAlt: 'Camisetas ADOM em exposição na loja, sob o letreiro da marca',
     images: ['/img/imagem-fundo01.jpeg', '/img/imagem-fundo02.jpeg'],
+    video: '/img/video-header.mp4',
   },
 
   marqueeItems: [
