@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CartItem, Product } from '@/types';
-import { isOutOfStock, resolvePrice } from '@/lib/stock';
+import { getAvailableStock, isOutOfStock, resolvePrice } from '@/lib/stock';
 
 const STORAGE_KEY = 'cart:v1';
 
@@ -64,12 +64,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addItem = useCallback(({ product, selectedVariants, quantity }: AddToCartInput) => {
     if (isOutOfStock(product, selectedVariants)) return;
     const cartItemId = buildCartItemId(product.id, selectedVariants);
+    // trava na soma real do estoque — sem isso, adicionar o mesmo item em
+    // duas visitas (ex: 15 + 15) passava do que existe de verdade (15)
+    const maxStock = getAvailableStock(product, selectedVariants);
 
     setItems((prev) => {
       const existing = prev.find((item) => item.cartItemId === cartItemId);
       if (existing) {
         return prev.map((item) =>
-          item.cartItemId === cartItemId ? { ...item, quantity: item.quantity + quantity } : item,
+          item.cartItemId === cartItemId
+            ? { ...item, quantity: Math.min(item.quantity + quantity, maxStock) }
+            : item,
         );
       }
       const resolved = resolvePrice(product, selectedVariants);
@@ -81,7 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         image: product.images[0],
         unitPrice: resolved.promoPrice ?? resolved.price,
         selectedVariants,
-        quantity,
+        quantity: Math.min(quantity, maxStock),
       };
       return [...prev, newItem];
     });

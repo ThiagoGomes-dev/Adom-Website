@@ -55,6 +55,7 @@ function ProductDetailContent({
     quantity,
     increment,
     decrement,
+    maxQuantity,
     selectedVariants,
     allGroupsSelected,
     activeImage,
@@ -161,7 +162,7 @@ function ProductDetailContent({
               />
             ))}
 
-            <QuantitySelector quantity={quantity} onIncrement={increment} onDecrement={decrement} />
+            <QuantitySelector quantity={quantity} onIncrement={increment} onDecrement={decrement} maxQuantity={maxQuantity} />
 
             {added ? (
               <motion.div

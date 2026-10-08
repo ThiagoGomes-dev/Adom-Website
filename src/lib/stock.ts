@@ -28,6 +28,13 @@ export function getComboPrice(product: Product, selection: Record<string, string
   return { price: entry.price, promoPrice: entry.promoPrice };
 }
 
+/** Estoque disponível pra uma seleção (ou do produto todo, quando não há estoque por variante) — usado pra travar incrementos de quantidade no valor real disponível, tanto no seletor da página quanto no carrinho. `Infinity` só quando o produto não tem nenhum dado de estoque cadastrado (não deveria travar a quantidade nesse caso). */
+export function getAvailableStock(product: Product, selectedVariants?: Record<string, string>): number {
+  const comboStock = selectedVariants ? getComboStock(product, selectedVariants) : undefined;
+  if (comboStock !== undefined) return Math.max(0, comboStock);
+  return typeof product.stockQuantity === 'number' ? Math.max(0, product.stockQuantity) : Infinity;
+}
+
 /** Esgotado (estoque zerado) ou marcado como indisponível no admin — em ambos os casos o produto fica visível na vitrine, mas bloqueado para compra. Quando `selectedVariants` é informado e o produto tem estoque por variante, considera o estoque daquela combinação específica em vez do total do produto. */
 export function isOutOfStock(product: Product, selectedVariants?: Record<string, string>): boolean {
   if (!product.available) return true;

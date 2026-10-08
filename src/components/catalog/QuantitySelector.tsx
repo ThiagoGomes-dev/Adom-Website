@@ -4,10 +4,14 @@ interface QuantitySelectorProps {
   quantity: number;
   onIncrement: () => void;
   onDecrement: () => void;
+  /** estoque disponível pra seleção atual — some o "+" trava aqui e mostra quantas peças restam. */
+  maxQuantity?: number;
 }
 
 /** Seletor de quantidade com toque confortável no celular. */
-export function QuantitySelector({ quantity, onIncrement, onDecrement }: QuantitySelectorProps) {
+export function QuantitySelector({ quantity, onIncrement, onDecrement, maxQuantity }: QuantitySelectorProps) {
+  const atMax = maxQuantity !== undefined && quantity >= maxQuantity;
+
   return (
     <div>
       <p className="text-sm font-semibold text-ink">Quantidade</p>
@@ -27,12 +31,16 @@ export function QuantitySelector({ quantity, onIncrement, onDecrement }: Quantit
         <button
           type="button"
           onClick={onIncrement}
-          className="flex h-11 w-11 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5"
+          disabled={atMax}
+          className="flex h-11 w-11 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5 disabled:opacity-30"
           aria-label="Aumentar quantidade"
         >
           <Plus size={16} />
         </button>
       </div>
+      {maxQuantity !== undefined && Number.isFinite(maxQuantity) && (
+        <p className="mt-1.5 text-xs text-ink-soft">{maxQuantity} em estoque</p>
+      )}
     </div>
   );
 }

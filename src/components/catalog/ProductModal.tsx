@@ -97,6 +97,7 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
     quantity,
     increment,
     decrement,
+    maxQuantity,
     selectedVariants,
     allGroupsSelected,
     activeImage,
@@ -173,7 +174,7 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
           />
         ))}
 
-        <QuantitySelector quantity={quantity} onIncrement={increment} onDecrement={decrement} />
+        <QuantitySelector quantity={quantity} onIncrement={increment} onDecrement={decrement} maxQuantity={maxQuantity} />
 
         {added ? (
           <motion.div

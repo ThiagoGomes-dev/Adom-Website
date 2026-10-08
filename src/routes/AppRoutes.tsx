@@ -8,6 +8,7 @@ import { ServicesPage } from '@/pages/ServicesPage';
 import { AboutPage } from '@/pages/AboutPage';
 import { ContactPage } from '@/pages/ContactPage';
 import { GalleryPage } from '@/pages/GalleryPage';
+import { OrderSuccessPage, OrderPendingPage, OrderFailurePage } from '@/pages/OrderStatusPages';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 /**
@@ -40,6 +41,9 @@ export function AppRoutes() {
             <>
               <Route path="/produtos" element={<ProductsPage />} />
               <Route path="/produtos/:slug" element={<ProductDetailPage />} />
+              <Route path="/pedido/sucesso" element={<OrderSuccessPage />} />
+              <Route path="/pedido/pendente" element={<OrderPendingPage />} />
+              <Route path="/pedido/falha" element={<OrderFailurePage />} />
             </>
           )}
 

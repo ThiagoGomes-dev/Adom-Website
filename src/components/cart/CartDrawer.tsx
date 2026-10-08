@@ -2,36 +2,44 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Minus, Plus, Trash2, ShoppingBag, MessageCircle, Receipt } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, CreditCard, Receipt } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { useCompanyConfig } from '@/context/CompanyConfigContext';
+import { useCatalog } from '@/context/CatalogContext';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useCepLookup, formatCep, isSameCity } from '@/hooks/useCepLookup';
-import { buildCartWhatsAppLink, type PaymentMethod } from '@/lib/whatsapp';
 import { formatPrice } from '@/lib/currency';
+import { getAvailableStock } from '@/lib/stock';
+import { createOrder } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
-import { cn } from '@/lib/cn';
 
 const FIXED_SHIPPING_CITY = 'Campina Grande';
+const LOCAL_SHIPPING_COST = 12;
+const REMOTE_SHIPPING_COST = 49.9;
 
 export function CartDrawer() {
-  const config = useCompanyConfig();
   const { items, removeItem, updateQuantity, clear, totalPrice, isOpen: open, closeCart: onClose } = useCart();
+  const { products } = useCatalog();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useScrollLock(open);
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [cep, setCep] = useState('');
   const [street, setStreet] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [number, setNumber] = useState('');
   const [reference, setReference] = useState('');
-  const [installments, setInstallments] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const cepDigits = cep.replace(/\D/g, '');
+  const phoneDigits = customerPhone.replace(/\D/g, '');
   const cepLookup = useCepLookup(cep);
   const fixedShipping = isSameCity(cepLookup.city, FIXED_SHIPPING_CITY);
+  const shippingCost = fixedShipping ? LOCAL_SHIPPING_COST : REMOTE_SHIPPING_COST;
   const canFinalize =
-    Boolean(paymentMethod) &&
+    customerName.trim() !== '' &&
+    phoneDigits.length >= 10 &&
+    phoneDigits.length <= 11 &&
     cepDigits.length === 8 &&
     street.trim() !== '' &&
     neighborhood.trim() !== '' &&
@@ -54,23 +62,45 @@ export function CartDrawer() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
-  const whatsappHref = buildCartWhatsAppLink(
-    config.whatsapp,
-    items,
-    config.businessName,
-    {
-      cep,
-      city: cepLookup.city,
-      fixedShipping,
-      street,
-      neighborhood,
-      number,
-      reference,
-      paymentMethod: paymentMethod ?? undefined,
-      installments,
-    },
-    config.paymentLink,
-  );
+  const addressNote = [
+    `${street}${number ? `, ${number}` : ''}${neighborhood ? ` - ${neighborhood}` : ''}`,
+    reference ? `Referência: ${reference}` : null,
+    `CEP: ${cep}${cepLookup.city ? ` (${cepLookup.city})` : ''}`,
+    fixedShipping
+      ? `Frete: ${formatPrice(LOCAL_SHIPPING_COST)} (entrega fixa em Campina Grande)`
+      : `Frete: ${formatPrice(REMOTE_SHIPPING_COST)} (fora de Campina Grande)`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  // Cria o pedido (reserva o estoque na hora) e redireciona pro Checkout Pro
+  // do Mercado Pago — a forma de pagamento (cartão/Pix/boleto) é escolhida
+  // lá, não mais aqui; pra nós só importa se foi pago. Só limpa o carrinho
+  // quando o cliente volta da página de pagamento aprovado (ver
+  // OrderStatusPages.tsx) — se o pagamento falhar ou ficar pendente, o
+  // carrinho continua intacto pra tentar de novo.
+  const handleFinalize = async () => {
+    if (submitting) return;
+    setSubmitError(null);
+    setSubmitting(true);
+    try {
+      const { checkoutUrl } = await createOrder({
+        items: items.map((item) => ({
+          productId: item.productId,
+          selectedVariants: item.selectedVariants,
+          quantity: item.quantity,
+        })),
+        shippingCost,
+        customerName: customerName.trim(),
+        customerPhone: phoneDigits,
+        note: addressNote,
+      });
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Não foi possível registrar o pedido. Tente novamente.');
+      setSubmitting(false);
+    }
+  };
 
   return createPortal(
     <AnimatePresence>
@@ -127,7 +157,10 @@ export function CartDrawer() {
                 <div className="flex-1 overflow-y-auto px-5 py-4">
                   <ul className="space-y-4">
                     <AnimatePresence initial={false}>
-                      {items.map((item) => (
+                      {items.map((item) => {
+                        const itemProduct = products.find((p) => p.id === item.productId);
+                        const itemMaxStock = itemProduct ? getAvailableStock(itemProduct, item.selectedVariants) : Infinity;
+                        return (
                         <motion.li
                           key={item.cartItemId}
                           layout
@@ -171,7 +204,8 @@ export function CartDrawer() {
                                 <button
                                   type="button"
                                   onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
-                                  className="flex h-7 w-7 items-center justify-center rounded-full text-ink hover:bg-ink/5"
+                                  disabled={item.quantity >= itemMaxStock}
+                                  className="flex h-7 w-7 items-center justify-center rounded-full text-ink hover:bg-ink/5 disabled:opacity-30"
                                   aria-label="Aumentar quantidade"
                                 >
                                   <Plus size={12} />
@@ -179,9 +213,13 @@ export function CartDrawer() {
                               </div>
                               <span className="text-sm font-bold text-ink">{formatPrice(item.unitPrice * item.quantity)}</span>
                             </div>
+                            {Number.isFinite(itemMaxStock) && item.quantity >= itemMaxStock && (
+                              <p className="mt-1 text-xs text-ink-soft">Estoque disponível: {itemMaxStock}</p>
+                            )}
                           </div>
                         </motion.li>
-                      ))}
+                        );
+                      })}
                     </AnimatePresence>
                   </ul>
 
@@ -191,51 +229,36 @@ export function CartDrawer() {
 
                   <div className="mt-5 space-y-4 border-t border-black/5 pt-4">
                     <div>
-                      <p className="text-sm font-semibold text-ink">Forma de pagamento</p>
-                      <div className="mt-2 flex gap-2">
-                        {(['pix', 'credito'] as const).map((method) => (
-                          <button
-                            key={method}
-                            type="button"
-                            onClick={() => setPaymentMethod(method)}
-                            aria-pressed={paymentMethod === method}
-                            className={cn(
-                              'flex-1 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors',
-                              paymentMethod === method
-                                ? 'border-accent bg-accent/10 text-ink'
-                                : 'border-black/10 text-ink-soft hover:border-black/20 hover:text-ink',
-                            )}
-                          >
-                            {method === 'pix' ? 'Pix' : 'Cartão de crédito'}
-                          </button>
-                        ))}
-                      </div>
-                      {paymentMethod === 'credito' && (
-                        <div className="mt-3">
-                          <label htmlFor="cart-installments" className="text-sm font-semibold text-ink">
-                            Parcelas
+                      <p className="text-sm font-semibold text-ink">Seus dados</p>
+                      <div className="mt-2 space-y-2">
+                        <div>
+                          <label htmlFor="cart-customer-name" className="sr-only">
+                            Seu nome
                           </label>
-                          <select
-                            id="cart-installments"
-                            value={installments}
-                            onChange={(e) => setInstallments(Number(e.target.value))}
-                            className="mt-2 w-full rounded-xl border border-black/10 bg-surface px-3.5 py-2.5 text-sm text-ink focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-                          >
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => {
-                              const hasInterest = n > 6;
-                              const installmentTotal = hasInterest ? totalPrice * 1.05 : totalPrice;
-                              return (
-                                <option key={n} value={n}>
-                                  {n}x de {formatPrice(installmentTotal / n)} {hasInterest ? '(5% de juros)' : 'sem juros'}
-                                </option>
-                              );
-                            })}
-                          </select>
-                          <p className="mt-2 text-xs text-ink-soft">
-                            Em até 6x sem juros. De 7x a 12x, juros de 5%.
-                          </p>
+                          <input
+                            id="cart-customer-name"
+                            type="text"
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            placeholder="Seu nome"
+                            className="w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                          />
                         </div>
-                      )}
+                        <div>
+                          <label htmlFor="cart-customer-phone" className="sr-only">
+                            Seu WhatsApp
+                          </label>
+                          <input
+                            id="cart-customer-phone"
+                            type="tel"
+                            inputMode="numeric"
+                            value={customerPhone}
+                            onChange={(e) => setCustomerPhone(e.target.value)}
+                            placeholder="Seu WhatsApp (com DDD)"
+                            className="w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <div>
@@ -259,9 +282,9 @@ export function CartDrawer() {
                             : cepLookup.notFound
                               ? 'CEP não encontrado — confira e tente novamente.'
                               : fixedShipping
-                                ? `Entrega em ${cepLookup.city}: frete fixo de R$ 12,00.`
+                                ? `Entrega em ${cepLookup.city}: frete fixo de ${formatPrice(LOCAL_SHIPPING_COST)}.`
                                 : cepLookup.city
-                                  ? `Entrega em ${cepLookup.city}: frete a consultar no WhatsApp.`
+                                  ? `Entrega em ${cepLookup.city}: frete de ${formatPrice(REMOTE_SHIPPING_COST)}.`
                                   : null}
                         </p>
                       )}
@@ -328,24 +351,44 @@ export function CartDrawer() {
                 </div>
 
                 <div className="space-y-3 border-t border-black/5 px-5 py-5">
-                  <div className="flex items-center justify-between text-base">
-                    <span className="font-semibold text-ink">Total</span>
-                    <span className="font-display text-xl font-bold text-ink">{formatPrice(totalPrice)}</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-sm text-ink-soft">
+                      <span>Subtotal</span>
+                      <span>{formatPrice(totalPrice)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-ink-soft">
+                      <span>Frete</span>
+                      <span>{formatPrice(shippingCost)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-base">
+                      <span className="font-semibold text-ink">Total</span>
+                      <span className="font-display text-xl font-bold text-ink">{formatPrice(totalPrice + shippingCost)}</span>
+                    </div>
                   </div>
+                  {submitError && <p className="text-sm text-red-600">{submitError}</p>}
                   {canFinalize ? (
-                    <Button href={whatsappHref} external variant="whatsapp" size="lg" fullWidth icon={<MessageCircle size={18} />}>
-                      Finalizar Compra
+                    <Button
+                      type="button"
+                      onClick={handleFinalize}
+                      disabled={submitting}
+                      variant="primary"
+                      size="lg"
+                      fullWidth
+                      icon={<CreditCard size={18} />}
+                    >
+                      {submitting ? 'Enviando pedido...' : 'Pagar com Mercado Pago'}
                     </Button>
                   ) : (
-                    <Button type="button" disabled variant="whatsapp" size="lg" fullWidth icon={<MessageCircle size={18} />}>
-                      Preencha pagamento e endereço
+                    <Button type="button" disabled variant="primary" size="lg" fullWidth icon={<CreditCard size={18} />}>
+                      Preencha os dados
                     </Button>
                   )}
                   <div className="flex items-start gap-2 rounded-xl bg-accent/10 p-3 text-xs text-ink">
                     <Receipt size={16} className="mt-0.5 shrink-0 text-accent" />
                     <p>
-                      Você vai receber o link de pagamento no WhatsApp. Pague o valor do pedido e envie o
-                      comprovante na conversa — assim que recebermos, separamos seu pedido para envio ou retirada.
+                      Você será redirecionado ao Mercado Pago para escolher a forma de pagamento (cartão, Pix ou
+                      boleto) e pagar com segurança. Assim que o pagamento for aprovado, separamos seu pedido para
+                      envio ou retirada.
                     </p>
                   </div>
                 </div>
