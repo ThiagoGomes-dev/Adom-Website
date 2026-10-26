@@ -2,26 +2,32 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Minus, Plus, Trash2, ShoppingBag, CreditCard, Receipt } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, CreditCard, Receipt, Truck, Store } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useCatalog } from '@/context/CatalogContext';
+import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { useCepLookup, formatCep, isSameCity } from '@/hooks/useCepLookup';
+import { useCepLookup, formatCep } from '@/hooks/useCepLookup';
 import { formatPrice } from '@/lib/currency';
 import { getAvailableStock } from '@/lib/stock';
 import { createOrder } from '@/lib/api';
+import {
+  computeShippingCost,
+  FREE_SHIPPING_MIN_SUBTOTAL,
+  LOCAL_SHIPPING_CITY,
+  type DeliveryMethod,
+} from '@/lib/shipping';
+import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/Button';
-
-const FIXED_SHIPPING_CITY = 'Campina Grande';
-const LOCAL_SHIPPING_COST = 12;
-const REMOTE_SHIPPING_COST = 49.9;
 
 export function CartDrawer() {
   const { items, removeItem, updateQuantity, clear, totalPrice, isOpen: open, closeCart: onClose } = useCart();
   const { products } = useCatalog();
+  const { address: storeAddress } = useCompanyConfig();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useScrollLock(open);
 
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('delivery');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [cep, setCep] = useState('');
@@ -34,16 +40,20 @@ export function CartDrawer() {
   const cepDigits = cep.replace(/\D/g, '');
   const phoneDigits = customerPhone.replace(/\D/g, '');
   const cepLookup = useCepLookup(cep);
-  const fixedShipping = isSameCity(cepLookup.city, FIXED_SHIPPING_CITY);
-  const shippingCost = fixedShipping ? LOCAL_SHIPPING_COST : REMOTE_SHIPPING_COST;
+  const isPickup = deliveryMethod === 'pickup';
+  const freeShipping = totalPrice >= FREE_SHIPPING_MIN_SUBTOTAL;
+  // só pra exibir — o valor cobrado é recalculado no admin com a mesma regra
+  const shippingCost = computeShippingCost({ method: deliveryMethod, city: cepLookup.city, subtotal: totalPrice });
   const canFinalize =
     customerName.trim() !== '' &&
     phoneDigits.length >= 10 &&
     phoneDigits.length <= 11 &&
-    cepDigits.length === 8 &&
-    street.trim() !== '' &&
-    neighborhood.trim() !== '' &&
-    number.trim() !== '';
+    (isPickup ||
+      (cepDigits.length === 8 &&
+        !cepLookup.notFound &&
+        street.trim() !== '' &&
+        neighborhood.trim() !== '' &&
+        number.trim() !== ''));
 
   // preenche rua/bairro sozinhos quando o CEP resolve — só se a pessoa ainda não tiver digitado nada
   useEffect(() => {
@@ -62,16 +72,15 @@ export function CartDrawer() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
-  const addressNote = [
-    `${street}${number ? `, ${number}` : ''}${neighborhood ? ` - ${neighborhood}` : ''}`,
-    reference ? `Referência: ${reference}` : null,
-    `CEP: ${cep}${cepLookup.city ? ` (${cepLookup.city})` : ''}`,
-    fixedShipping
-      ? `Frete: ${formatPrice(LOCAL_SHIPPING_COST)} (entrega fixa em Campina Grande)`
-      : `Frete: ${formatPrice(REMOTE_SHIPPING_COST)} (fora de Campina Grande)`,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  const addressNote = isPickup
+    ? 'Retirada na loja'
+    : [
+        `${street}${number ? `, ${number}` : ''}${neighborhood ? ` - ${neighborhood}` : ''}`,
+        reference ? `Referência: ${reference}` : null,
+        `CEP: ${cep}${cepLookup.city ? ` (${cepLookup.city})` : ''}`,
+      ]
+        .filter(Boolean)
+        .join('\n');
 
   // Cria o pedido (reserva o estoque na hora) e redireciona pro Checkout Pro
   // do Mercado Pago — a forma de pagamento (cartão/Pix/boleto) é escolhida
@@ -85,12 +94,14 @@ export function CartDrawer() {
     setSubmitting(true);
     try {
       const { checkoutUrl } = await createOrder({
+        // o frete NÃO vai no payload: o admin calcula pelo tipo de entrega + CEP
         items: items.map((item) => ({
           productId: item.productId,
           selectedVariants: item.selectedVariants,
           quantity: item.quantity,
         })),
-        shippingCost,
+        deliveryMethod,
+        cep: isPickup ? undefined : cepDigits,
         customerName: customerName.trim(),
         customerPhone: phoneDigits,
         note: addressNote,
@@ -262,6 +273,49 @@ export function CartDrawer() {
                     </div>
 
                     <div>
+                      <p className="text-sm font-semibold text-ink">Como você quer receber?</p>
+                      <div className="mt-2 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Forma de entrega">
+                        {(
+                          [
+                            { value: 'delivery', label: 'Entrega', icon: <Truck size={16} /> },
+                            { value: 'pickup', label: 'Retirar na loja', icon: <Store size={16} /> },
+                          ] as const
+                        ).map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            role="radio"
+                            aria-checked={deliveryMethod === opt.value}
+                            onClick={() => setDeliveryMethod(opt.value)}
+                            className={cn(
+                              'flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors',
+                              deliveryMethod === opt.value
+                                ? 'border-accent bg-accent/10 text-ink'
+                                : 'border-black/10 text-ink-soft hover:border-black/20',
+                            )}
+                          >
+                            {opt.icon}
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {isPickup ? (
+                      <div className="rounded-xl bg-surface-alt p-3.5 text-sm text-ink">
+                        <p className="font-semibold">Retirada sem custo de frete</p>
+                        {storeAddress && (
+                          <p className="mt-1 text-ink-soft">
+                            {storeAddress.street} – {storeAddress.neighborhood}, {storeAddress.city}/{storeAddress.state}
+                          </p>
+                        )}
+                        <p className="mt-1 text-xs text-ink-soft">
+                          Avisamos pelo WhatsApp quando o pedido estiver separado para retirada.
+                        </p>
+                      </div>
+                    ) : (
+                    <>
+                    <div>
                       <label htmlFor="cart-cep" className="text-sm font-semibold text-ink">
                         CEP para entrega
                       </label>
@@ -281,11 +335,15 @@ export function CartDrawer() {
                             ? 'Consultando CEP...'
                             : cepLookup.notFound
                               ? 'CEP não encontrado — confira e tente novamente.'
-                              : fixedShipping
-                                ? `Entrega em ${cepLookup.city}: frete fixo de ${formatPrice(LOCAL_SHIPPING_COST)}.`
-                                : cepLookup.city
-                                  ? `Entrega em ${cepLookup.city}: frete de ${formatPrice(REMOTE_SHIPPING_COST)}.`
-                                  : null}
+                              : cepLookup.city
+                                ? freeShipping
+                                  ? `Entrega em ${cepLookup.city}: frete grátis acima de ${formatPrice(FREE_SHIPPING_MIN_SUBTOTAL)}.`
+                                  : `Entrega em ${cepLookup.city}: frete de ${formatPrice(shippingCost)}${
+                                      cepLookup.city.localeCompare(LOCAL_SHIPPING_CITY, 'pt-BR', { sensitivity: 'base' }) === 0
+                                        ? ' (valor fixo na cidade)'
+                                        : ''
+                                    }.`
+                                : null}
                         </p>
                       )}
                     </div>
@@ -347,6 +405,8 @@ export function CartDrawer() {
                         className="mt-2 w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                       />
                     </div>
+                    </>
+                    )}
                   </div>
                 </div>
 
@@ -357,12 +417,20 @@ export function CartDrawer() {
                       <span>{formatPrice(totalPrice)}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm text-ink-soft">
-                      <span>Frete</span>
-                      <span>{formatPrice(shippingCost)}</span>
+                      <span>{isPickup ? 'Frete (retirada na loja)' : 'Frete'}</span>
+                      <span>
+                        {isPickup || freeShipping
+                          ? 'Grátis'
+                          : !isPickup && !cepLookup.city
+                            ? 'Informe o CEP'
+                            : formatPrice(shippingCost)}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between text-base">
                       <span className="font-semibold text-ink">Total</span>
-                      <span className="font-display text-xl font-bold text-ink">{formatPrice(totalPrice + shippingCost)}</span>
+                      <span className="font-display text-xl font-bold text-ink">
+                        {formatPrice(totalPrice + (!isPickup && !cepLookup.city ? 0 : shippingCost))}
+                      </span>
                     </div>
                   </div>
                   {submitError && <p className="text-sm text-red-600">{submitError}</p>}
