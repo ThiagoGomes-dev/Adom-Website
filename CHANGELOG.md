@@ -8,8 +8,14 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+## [0.2.0] - 2026-10-26
+
 ### Adicionado
 - Processo de release: branch `develop` (homologação), CI com lint, tipos, testes e build, testes com Vitest, template de PR e este changelog.
+- Retirada na loja no carrinho, com o frete calculado pelo painel.
+
+### Segurança
+- Sem mudanças.
 
 ## [0.1.0] - 2026-10-26
 
