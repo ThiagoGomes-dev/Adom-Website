@@ -1,4 +1,5 @@
 import type { Category, Product } from '@/types';
+import type { DeliveryMethod } from '@/lib/shipping';
 
 const BASE_URL = import.meta.env.VITE_ADMIN_API_URL ?? '';
 
@@ -23,8 +24,13 @@ export function fetchCategories(): Promise<Category[]> {
 
 export interface CreateOrderPayload {
   items: { productId: string; selectedVariants: Record<string, string>; quantity: number }[];
-  /** forma de pagamento é escolhida no próprio Checkout Pro do Mercado Pago, não aqui */
-  shippingCost: number;
+  /**
+   * Entrega ou retirada + CEP — o admin calcula o frete a partir disso (não
+   * mandamos valor de frete). A forma de pagamento é escolhida no próprio
+   * Checkout Pro do Mercado Pago, não aqui.
+   */
+  deliveryMethod: DeliveryMethod;
+  cep?: string;
   customerName: string;
   customerPhone: string;
   note?: string;
