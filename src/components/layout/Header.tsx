@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Menu, Search } from 'lucide-react';
+import { Menu, PackageSearch, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { useCatalog } from '@/context/CatalogContext';
@@ -72,6 +72,17 @@ export function Header() {
               className="hidden rounded-full p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white sm:inline-flex"
             >
               <Search size={18} />
+            </Link>
+          )}
+
+          {showCart && (
+            <Link
+              to="/acompanhar-pedido"
+              aria-label="Acompanhar pedido"
+              title="Acompanhar pedido"
+              className="inline-flex rounded-full p-2.5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <PackageSearch size={18} />
             </Link>
           )}
 
