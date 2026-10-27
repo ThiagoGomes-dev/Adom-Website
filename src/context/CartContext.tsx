@@ -16,6 +16,8 @@ interface CartContextValue {
   removeItem: (cartItemId: string) => void;
   updateQuantity: (cartItemId: string, quantity: number) => void;
   clear: () => void;
+  /** troca o carrinho inteiro — usado pra montar de novo um pedido que não foi pago */
+  replaceItems: (items: CartItem[]) => void;
   totalItems: number;
   totalPrice: number;
   isOpen: boolean;
@@ -48,8 +50,8 @@ function readStoredCart(): CartItem[] {
 /**
  * Estado global do carrinho, persistido em localStorage. O fluxo é:
  * selecionar variantes/quantidade de um produto -> `addItem` -> repetir para
- * outros produtos -> abrir o carrinho -> "Finalizar pelo WhatsApp" envia o
- * histórico completo (ver `buildCartWhatsAppLink` em `src/lib/whatsapp.ts`).
+ * outros produtos -> abrir o carrinho -> finalizar cria o pedido, esvazia o
+ * carrinho e leva pro Mercado Pago (ver `CartDrawer.tsx` e `src/lib/lastOrder.ts`).
  */
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>(() => readStoredCart());
@@ -105,13 +107,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const clear = useCallback(() => setItems([]), []);
+  const replaceItems = useCallback((next: CartItem[]) => setItems(next), []);
 
   const totalItems = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
   const totalPrice = useMemo(() => items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0), [items]);
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, updateQuantity, clear, totalItems, totalPrice, isOpen, openCart, closeCart }),
-    [items, addItem, removeItem, updateQuantity, clear, totalItems, totalPrice, isOpen, openCart, closeCart],
+    () => ({
+      items,
+      addItem,
+      removeItem,
+      updateQuantity,
+      clear,
+      replaceItems,
+      totalItems,
+      totalPrice,
+      isOpen,
+      openCart,
+      closeCart,
+    }),
+    [items, addItem, removeItem, updateQuantity, clear, replaceItems, totalItems, totalPrice, isOpen, openCart, closeCart],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

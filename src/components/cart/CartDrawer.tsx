@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Minus, Plus, Trash2, ShoppingBag, CreditCard, Receipt, Truck, Store } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ShoppingBag, CreditCard, Receipt, Truck, Store, PackageSearch } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useCatalog } from '@/context/CatalogContext';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
@@ -11,6 +11,7 @@ import { useCepLookup, formatCep } from '@/hooks/useCepLookup';
 import { formatPrice } from '@/lib/currency';
 import { getAvailableStock } from '@/lib/stock';
 import { createOrder } from '@/lib/api';
+import { readLastOrder, saveLastOrder } from '@/lib/lastOrder';
 import {
   computeShippingCost,
   FREE_SHIPPING_MIN_SUBTOTAL,
@@ -30,6 +31,7 @@ export function CartDrawer() {
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('delivery');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [cep, setCep] = useState('');
   const [street, setStreet] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
@@ -39,6 +41,9 @@ export function CartDrawer() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const cepDigits = cep.replace(/\D/g, '');
   const phoneDigits = customerPhone.replace(/\D/g, '');
+  const phoneInvalid = customerPhone !== '' && (phoneDigits.length < 10 || phoneDigits.length > 11);
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(customerEmail.trim());
+  const lastOrder = open ? readLastOrder() : null;
   const cepLookup = useCepLookup(cep);
   const isPickup = deliveryMethod === 'pickup';
   const freeShipping = totalPrice >= FREE_SHIPPING_MIN_SUBTOTAL;
@@ -48,6 +53,7 @@ export function CartDrawer() {
     customerName.trim() !== '' &&
     phoneDigits.length >= 10 &&
     phoneDigits.length <= 11 &&
+    emailValid &&
     (isPickup ||
       (cepDigits.length === 8 &&
         !cepLookup.notFound &&
@@ -84,16 +90,17 @@ export function CartDrawer() {
 
   // Cria o pedido (reserva o estoque na hora) e redireciona pro Checkout Pro
   // do Mercado Pago — a forma de pagamento (cartão/Pix/boleto) é escolhida
-  // lá, não mais aqui; pra nós só importa se foi pago. Só limpa o carrinho
-  // quando o cliente volta da página de pagamento aprovado (ver
-  // OrderStatusPages.tsx) — se o pagamento falhar ou ficar pendente, o
-  // carrinho continua intacto pra tentar de novo.
+  // lá, não mais aqui; pra nós só importa se foi pago. O carrinho é
+  // esvaziado já aqui, porque o cliente nem sempre volta pro site depois de
+  // pagar (no Pix é comum fechar a aba). Uma cópia dos itens fica em
+  // `lastOrder`: se o pagamento não for concluído, a página do pedido monta
+  // o carrinho de novo com um clique.
   const handleFinalize = async () => {
     if (submitting) return;
     setSubmitError(null);
     setSubmitting(true);
     try {
-      const { checkoutUrl } = await createOrder({
+      const { orderId, checkoutUrl } = await createOrder({
         // o frete NÃO vai no payload: o admin calcula pelo tipo de entrega + CEP
         items: items.map((item) => ({
           productId: item.productId,
@@ -104,8 +111,11 @@ export function CartDrawer() {
         cep: isPickup ? undefined : cepDigits,
         customerName: customerName.trim(),
         customerPhone: phoneDigits,
+        customerEmail: customerEmail.trim(),
         note: addressNote,
       });
+      saveLastOrder({ id: orderId, items, createdAt: new Date().toISOString() });
+      clear();
       window.location.href = checkoutUrl;
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Não foi possível registrar o pedido. Tente novamente.');
@@ -162,6 +172,14 @@ export function CartDrawer() {
                 <Button to="/produtos" size="sm" onClick={onClose} className="mt-2">
                   Ver produtos
                 </Button>
+                <Link
+                  to={lastOrder ? `/pedido/${lastOrder.id}` : '/acompanhar-pedido'}
+                  onClick={onClose}
+                  className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft underline hover:text-ink"
+                >
+                  <PackageSearch size={15} />
+                  {lastOrder ? 'Acompanhar meu último pedido' : 'Acompanhar um pedido'}
+                </Link>
               </div>
             ) : (
               <>
@@ -263,11 +281,40 @@ export function CartDrawer() {
                             id="cart-customer-phone"
                             type="tel"
                             inputMode="numeric"
+                            autoComplete="tel-national"
                             value={customerPhone}
                             onChange={(e) => setCustomerPhone(e.target.value)}
-                            placeholder="Seu WhatsApp (com DDD)"
+                            placeholder="WhatsApp com DDD: (83) 99999-9999"
+                            aria-describedby="cart-customer-phone-hint"
                             className="w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
                           />
+                          <p
+                            id="cart-customer-phone-hint"
+                            className={cn('mt-1 text-xs', phoneInvalid ? 'text-red-600' : 'text-ink-soft')}
+                          >
+                            {phoneInvalid
+                              ? 'Confira o número: DDD + número, ex: (83) 99999-9999.'
+                              : 'DDD + número, ex: (83) 99999-9999. Usamos para avisar sobre o pedido.'}
+                          </p>
+                        </div>
+                        <div>
+                          <label htmlFor="cart-customer-email" className="sr-only">
+                            Seu e-mail
+                          </label>
+                          <input
+                            id="cart-customer-email"
+                            type="email"
+                            inputMode="email"
+                            autoComplete="email"
+                            value={customerEmail}
+                            onChange={(e) => setCustomerEmail(e.target.value)}
+                            placeholder="Seu e-mail: nome@exemplo.com"
+                            aria-invalid={customerEmail !== '' && !emailValid}
+                            className="w-full rounded-xl border border-black/10 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+                          />
+                          {customerEmail !== '' && !emailValid && (
+                            <p className="mt-1 text-xs text-red-600">Confira o e-mail, ex: nome@exemplo.com.</p>
+                          )}
                         </div>
                       </div>
                     </div>

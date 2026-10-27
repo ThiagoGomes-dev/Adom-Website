@@ -10,6 +10,7 @@ export function buildNavItems(config: CompanyConfig): NavItem[] {
 
   if (config.pages.products && config.features.showCatalog) {
     items.push({ label: 'Produtos', href: '/produtos' });
+    items.push({ label: 'Acompanhar pedido', href: '/acompanhar-pedido' });
   }
   if (config.pages.services && config.features.showServices) {
     items.push({ label: 'Serviços', href: '/servicos' });

@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { SEO } from '@/components/layout/SEO';
@@ -7,11 +7,19 @@ import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 
 /**
- * Páginas de retorno do Checkout Pro (Mercado Pago `back_urls`). Só
- * tranquilizam visualmente o cliente — a confirmação de verdade (baixar
- * estoque definitivo / devolver em caso de recusa) acontece no webhook,
- * não aqui.
+ * Páginas de retorno do Checkout Pro (Mercado Pago `back_urls`). Com o
+ * número do pedido na URL (`?order=`), mandam direto pra página "Meu pedido",
+ * que mostra o status real lido do painel. As telas fixas abaixo ficam só
+ * como fallback pra um retorno sem o número. A confirmação de verdade
+ * (baixar estoque definitivo / devolver em caso de recusa) acontece no
+ * webhook, não aqui.
  */
+function useOrderRedirect() {
+  const [params] = useSearchParams();
+  const orderId = params.get('order');
+  return orderId ? <Navigate to={`/pedido/${encodeURIComponent(orderId)}`} replace /> : null;
+}
+
 function OrderStatusPage({
   title,
   seoTitle,
@@ -47,19 +55,17 @@ function OrderStatusPage({
 }
 
 export function OrderSuccessPage() {
-  const [params] = useSearchParams();
-  const orderId = params.get('order');
+  const redirect = useOrderRedirect();
   const { clear } = useCart();
 
-  // Só chega aqui quando o Mercado Pago retorna com pagamento aprovado
-  // (`auto_return: 'approved'`) — é o momento certo de esvaziar o carrinho,
-  // não antes (se o pagamento falhar/ficar pendente, o carrinho continua
-  // intacto pra o cliente tentar de novo).
+  // O carrinho já é esvaziado ao finalizar (CartDrawer.tsx); aqui é só uma
+  // garantia pra quem finalizou numa versão antiga do site.
   useEffect(() => {
     clear();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (redirect) return redirect;
   return (
     <OrderStatusPage
       tone="success"
@@ -68,8 +74,7 @@ export function OrderSuccessPage() {
       title="Pagamento aprovado!"
       message={
         <>
-          Recebemos seu pagamento{orderId ? ` (pedido ${orderId.slice(0, 8)})` : ''} e já estamos preparando seu
-          pedido para envio ou retirada.
+          Recebemos seu pagamento e já estamos preparando seu pedido para envio ou retirada.
         </>
       }
     />
@@ -77,6 +82,8 @@ export function OrderSuccessPage() {
 }
 
 export function OrderPendingPage() {
+  const redirect = useOrderRedirect();
+  if (redirect) return redirect;
   return (
     <OrderStatusPage
       tone="pending"
@@ -89,6 +96,8 @@ export function OrderPendingPage() {
 }
 
 export function OrderFailurePage() {
+  const redirect = useOrderRedirect();
+  if (redirect) return redirect;
   return (
     <OrderStatusPage
       tone="failure"
