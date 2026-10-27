@@ -8,6 +8,8 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+## [0.3.0] - 2026-10-27
+
 ### Adicionado
 - Página "Meu pedido" (`/pedido/<id>`) com o status real do pedido, linha do tempo, itens, total, código de rastreio e etapa de retirada. Atualiza sozinha enquanto o pagamento não confirma.
 - Página "Acompanhar pedido" (`/acompanhar-pedido`), com número do pedido + telefone, e atalhos no topo do site, no rodapé e no carrinho vazio.
