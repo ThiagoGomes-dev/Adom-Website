@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { useCatalog } from '@/context/CatalogContext';
+import { subtreeSlugs } from '@/lib/categoryTree';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
@@ -14,14 +15,15 @@ const MAX_PER_CATEGORY = 10;
  */
 export function CategoryShowcase() {
   const config = useCompanyConfig();
-  const { categories, products } = useCatalog();
+  const { categoryTree, products } = useCatalog();
   if (!config.features.showCatalog || !config.pages.products) return null;
 
-  const rows = categories
-    .map((category) => ({
-      category,
-      items: products.filter((p) => p.category === category.slug).slice(0, MAX_PER_CATEGORY),
-    }))
+  // uma vitrine por categoria principal, já contando os produtos das subcategorias
+  const rows = categoryTree
+    .map((category) => {
+      const slugs = subtreeSlugs(category);
+      return { category, items: products.filter((p) => slugs.has(p.category)).slice(0, MAX_PER_CATEGORY) };
+    })
     .filter((row) => row.items.length > 0);
 
   if (!rows.length) return null;
