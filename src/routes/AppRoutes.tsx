@@ -9,6 +9,7 @@ import { AboutPage } from '@/pages/AboutPage';
 import { ContactPage } from '@/pages/ContactPage';
 import { GalleryPage } from '@/pages/GalleryPage';
 import { OrderSuccessPage, OrderPendingPage, OrderFailurePage } from '@/pages/OrderStatusPages';
+import { OrderPage, TrackOrderPage } from '@/pages/OrderTrackingPages';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 /**
@@ -44,6 +45,8 @@ export function AppRoutes() {
               <Route path="/pedido/sucesso" element={<OrderSuccessPage />} />
               <Route path="/pedido/pendente" element={<OrderPendingPage />} />
               <Route path="/pedido/falha" element={<OrderFailurePage />} />
+              <Route path="/pedido/:orderId" element={<OrderPage />} />
+              <Route path="/acompanhar-pedido" element={<TrackOrderPage />} />
             </>
           )}
 
