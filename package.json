@@ -1,7 +1,7 @@
 {
   "name": "smallbiz-platform",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "description": "Base comercial reutilizável para sites e catálogos de pequenos negócios (landing pages, institucional, catálogo, WhatsApp).",
   "scripts": {
