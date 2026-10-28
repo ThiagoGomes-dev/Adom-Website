@@ -27,6 +27,8 @@ export type PlanTier = 'basico' | 'catalogo' | 'completo';
 export interface NavItem {
   label: string;
   href: string;
+  /** subitens (subcategorias) — o menu do celular abre em sanfona */
+  children?: NavItem[];
 }
 
 // ---------------------------------------------------------------------------
@@ -257,6 +259,10 @@ export interface Category {
   icon?: string;
   /** Imagem de capa cadastrada no admin — usada na grade "compre por categoria". */
   image?: string;
+  /** id da categoria pai — só em subcategorias (pode haver vários níveis). */
+  parentId?: string;
+  /** posição entre as irmãs, definida arrastando no painel. */
+  sortOrder?: number;
 }
 
 export type SortOption = 'relevance' | 'price-asc' | 'price-desc' | 'name-asc' | 'newest';

@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Category, Product } from '@/types';
 import { fetchCategories, fetchProducts } from '@/lib/api';
 import { demoProducts } from '@/data/demo/products';
 import { demoCategories } from '@/data/demo/categories';
+import { buildCategoryTree, type CategoryNode } from '@/lib/categoryTree';
 
 interface CatalogState {
   products: Product[];
@@ -11,7 +12,12 @@ interface CatalogState {
   error: string | null;
 }
 
-const CatalogContext = createContext<CatalogState | null>(null);
+interface CatalogValue extends CatalogState {
+  /** categorias principais com as subcategorias dentro (`categories` continua sendo a lista plana) */
+  categoryTree: CategoryNode[];
+}
+
+const CatalogContext = createContext<CatalogValue | null>(null);
 
 // Liga só localmente (.env.local, nunca commitado/usado em produção) para
 // visualizar layout/animações do catálogo sem depender dos produtos reais
@@ -47,10 +53,12 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  return <CatalogContext.Provider value={state}>{children}</CatalogContext.Provider>;
+  const value = useMemo(() => ({ ...state, categoryTree: buildCategoryTree(state.categories) }), [state]);
+
+  return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;
 }
 
-export function useCatalog(): CatalogState {
+export function useCatalog(): CatalogValue {
   const ctx = useContext(CatalogContext);
   if (!ctx) throw new Error('useCatalog deve ser usado dentro de <CatalogProvider>');
   return ctx;

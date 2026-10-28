@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, MessageCircle, Instagram, Facebook } from 'lucide-react';
+import { X, MessageCircle, Instagram, Facebook, ChevronDown } from 'lucide-react';
 import type { NavItem } from '@/types';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { buildContactWhatsAppLink } from '@/lib/whatsapp';
@@ -90,19 +90,7 @@ export function MobileMenu({ open, onClose, navItems }: MobileMenuProps) {
             >
               {navItems.map((item) => (
                 <motion.div key={item.href} variants={itemVariants}>
-                  <NavLink
-                    to={item.href}
-                    end={item.href === '/'}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      cn(
-                        'block rounded-xl px-4 py-3.5 text-base font-medium transition-colors',
-                        isActive ? 'bg-ink/5 text-ink' : 'text-ink-soft hover:bg-ink/5 hover:text-ink',
-                      )
-                    }
-                  >
-                    {item.label}
-                  </NavLink>
+                  <MobileNavItem item={item} depth={0} onNavigate={onClose} />
                 </motion.div>
               ))}
             </motion.nav>
@@ -143,5 +131,67 @@ export function MobileMenu({ open, onClose, navItems }: MobileMenuProps) {
       )}
     </AnimatePresence>,
     document.body,
+  );
+}
+
+/**
+ * Item do menu do celular. Com subitens (subcategorias), a seta ao lado abre
+ * e fecha a lista em sanfona; tocar no nome continua levando à categoria.
+ */
+function MobileNavItem({ item, depth, onNavigate }: { item: NavItem; depth: number; onNavigate: () => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = !!item.children?.length;
+  const location = useLocation();
+  // NavLink ignora a query string, então todas as categorias (/produtos?categoria=...) pareceriam ativas
+  const isCurrent = location.pathname + location.search === item.href;
+
+  return (
+    <div>
+      <div className="flex items-center">
+        <NavLink
+          to={item.href}
+          end={item.href === '/'}
+          onClick={onNavigate}
+          style={depth ? { paddingLeft: 16 + depth * 16 } : undefined}
+          className={({ isActive }) =>
+            cn(
+              'block flex-1 rounded-xl px-4 transition-colors',
+              depth === 0 ? 'py-3.5 text-base font-medium' : 'py-3 text-[15px]',
+              (item.href.includes('?') ? isCurrent : isActive)
+                ? 'bg-ink/5 text-ink'
+                : 'text-ink-soft hover:bg-ink/5 hover:text-ink',
+            )
+          }
+        >
+          {item.label}
+        </NavLink>
+        {hasChildren && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+            aria-label={`${expanded ? 'Fechar' : 'Abrir'} subcategorias de ${item.label}`}
+            className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-ink-soft hover:bg-ink/5 hover:text-ink"
+          >
+            <ChevronDown size={18} className={cn('transition-transform', expanded && 'rotate-180')} />
+          </button>
+        )}
+      </div>
+      <AnimatePresence initial={false}>
+        {hasChildren && expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            {item.children!.map((child) => (
+              <MobileNavItem key={child.href} item={child} depth={depth + 1} onNavigate={onNavigate} />
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

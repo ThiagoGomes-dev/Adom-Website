@@ -9,6 +9,7 @@ import { SEO } from '@/components/layout/SEO';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { SearchBar } from '@/components/catalog/SearchBar';
 import { CategoryFilter } from '@/components/catalog/CategoryFilter';
+import { slugsWithin } from '@/lib/categoryTree';
 import { SortSelect } from '@/components/catalog/SortSelect';
 import { ProductGrid } from '@/components/catalog/ProductGrid';
 
@@ -20,7 +21,7 @@ const normalize = (text: string) =>
 
 export function ProductsPage() {
   const config = useCompanyConfig();
-  const { products: demoProducts, categories: demoCategories, loading } = useCatalog();
+  const { products: demoProducts, categoryTree, loading } = useCatalog();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const search = searchParams.get('q') ?? '';
@@ -38,7 +39,11 @@ export function ProductsPage() {
   const filtered = useMemo(() => {
     let list = [...demoProducts];
 
-    if (category) list = list.filter((p) => p.category === category);
+    if (category) {
+      // a categoria escolhida inclui os produtos das subcategorias dela
+      const slugs = slugsWithin(categoryTree, category);
+      list = list.filter((p) => slugs.has(p.category));
+    }
 
     if (debouncedSearch.trim()) {
       const q = normalize(debouncedSearch);
@@ -66,7 +71,7 @@ export function ProductsPage() {
     list.sort((a, b) => Number(!isOutOfStock(b)) - Number(!isOutOfStock(a)));
 
     return list;
-  }, [demoProducts, category, debouncedSearch, sort]);
+  }, [demoProducts, categoryTree, category, debouncedSearch, sort]);
 
   const clearFilters = () => setSearchParams({}, { replace: true });
 
@@ -88,7 +93,7 @@ export function ProductsPage() {
             <SortSelect value={sort} onChange={(v) => setParam('ordenar', v === 'relevance' ? null : v)} />
           </div>
 
-          <CategoryFilter categories={demoCategories} active={category} onChange={(v) => setParam('categoria', v)} />
+          <CategoryFilter tree={categoryTree} active={category} onChange={(v) => setParam('categoria', v)} />
         </div>
 
         {loading ? (
