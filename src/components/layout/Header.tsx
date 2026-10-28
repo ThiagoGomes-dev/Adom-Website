@@ -9,12 +9,13 @@ import { Container } from '@/components/ui/Container';
 import { CartButton } from '@/components/cart/CartButton';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { MobileMenu } from './MobileMenu';
+import { CategoryNav } from './CategoryNav';
 import { cn } from '@/lib/cn';
 
 export function Header() {
   const config = useCompanyConfig();
-  const { categories } = useCatalog();
-  const navItems = buildCategoryNavItems(categories);
+  const { categoryTree } = useCatalog();
+  const navItems = buildCategoryNavItems(categoryTree);
   const [searchParams] = useSearchParams();
   const activeCategory = searchParams.get('categoria');
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -49,20 +50,7 @@ export function Header() {
           </motion.span>
         </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Categorias">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              to={`/produtos?categoria=${category.slug}`}
-              className={cn(
-                'text-xs font-semibold uppercase tracking-[0.18em] transition-colors',
-                activeCategory === category.slug ? 'text-white' : 'text-white/55 hover:text-white',
-              )}
-            >
-              {category.name}
-            </Link>
-          ))}
-        </nav>
+        <CategoryNav tree={categoryTree} activeSlug={activeCategory} />
 
         <div className="flex items-center gap-1">
           {showCart && (

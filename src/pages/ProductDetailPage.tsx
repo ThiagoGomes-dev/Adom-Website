@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, ShoppingBag, Check } from 'lucide-react';
 import type { Product } from '@/types';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { useCatalog } from '@/context/CatalogContext';
+import { categoryPath } from '@/lib/categoryTree';
 import { useCart } from '@/context/CartContext';
 import { useProductSelection } from '@/hooks/useProductSelection';
 import { formatPrice, discountPercent } from '@/lib/currency';
@@ -22,30 +23,30 @@ import { ProductGrid } from '@/components/catalog/ProductGrid';
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const config = useCompanyConfig();
-  const { products: demoProducts, categories: demoCategories, loading } = useCatalog();
+  const { products: demoProducts, categoryTree, loading } = useCatalog();
   const product = demoProducts.find((p) => p.slug === slug);
 
   if (!config.features.showCatalog) return <Navigate to="/" replace />;
   if (loading) return null;
   if (!product) return <Navigate to="/produtos" replace />;
 
-  const category = demoCategories.find((c) => c.slug === product.category);
+  // caminho completo (Camisetas › Oversized) para o breadcrumb
+  const categoryTrail = categoryPath(categoryTree, product.category).map(({ name, slug }) => ({ name, slug }));
   const related = demoProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
-  return (
-    <ProductDetailContent product={product} categoryName={category?.name} related={related} />
-  );
+  return <ProductDetailContent product={product} categoryTrail={categoryTrail} related={related} />;
 }
 
 function ProductDetailContent({
   product,
-  categoryName,
+  categoryTrail,
   related,
 }: {
   product: Product;
-  categoryName?: string;
+  categoryTrail: { name: string; slug: string }[];
   related: Product[];
 }) {
+  const categoryName = categoryTrail[categoryTrail.length - 1]?.name;
   const config = useCompanyConfig();
   const { addItem, openCart } = useCart();
   const [added, setAdded] = useState(false);
@@ -91,14 +92,14 @@ function ProductDetailContent({
           <Link to="/produtos" className="hover:text-ink">
             Produtos
           </Link>
-          {categoryName && (
-            <>
+          {categoryTrail.map((c) => (
+            <Fragment key={c.slug}>
               <ChevronRight size={12} />
-              <Link to={`/produtos?categoria=${product.category}`} className="hover:text-ink">
-                {categoryName}
+              <Link to={`/produtos?categoria=${c.slug}`} className="hover:text-ink">
+                {c.name}
               </Link>
-            </>
-          )}
+            </Fragment>
+          ))}
           <ChevronRight size={12} />
           <span className="text-ink">{product.name}</span>
         </nav>

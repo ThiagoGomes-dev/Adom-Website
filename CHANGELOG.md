@@ -8,6 +8,15 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+## [0.4.0] - 2026-10-28
+
+### Adicionado
+- Subcategorias no menu: categoria com subcategorias abre um dropdown no topo do site (vários níveis, na ordem definida no painel) e vira sanfona no menu do celular.
+- Filtro da página de produtos por níveis: escolher uma categoria mostra os produtos das subcategorias dela e uma linha com as subcategorias para refinar. Breadcrumb do produto mostra o caminho completo.
+
+### Corrigido
+- O menu do celular marcava todas as categorias como ativas na página de produtos.
+
 ## [0.3.0] - 2026-10-27
 
 ### Adicionado
