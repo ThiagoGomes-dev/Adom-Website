@@ -23,11 +23,12 @@ import { ProductGrid } from '@/components/catalog/ProductGrid';
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const config = useCompanyConfig();
-  const { products: demoProducts, categoryTree, loading } = useCatalog();
+  const { products: demoProducts, categoryTree, loading, stale } = useCatalog();
   const product = demoProducts.find((p) => p.slug === slug);
 
   if (!config.features.showCatalog) return <Navigate to="/" replace />;
-  if (loading) return null;
+  // produto novo que ainda não está na cópia salva: espera a versão atual antes de desistir
+  if (loading || (!product && stale)) return null;
   if (!product) return <Navigate to="/produtos" replace />;
 
   // caminho completo (Camisetas › Oversized) para o breadcrumb

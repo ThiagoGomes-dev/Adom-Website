@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Product } from '@/types';
@@ -10,6 +10,7 @@ import { Section, SectionHeading } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
 import { ProductCard } from '@/components/catalog/ProductCard';
 import { ProductModal } from '@/components/catalog/ProductModal';
+import { ProductGridSkeleton } from '@/components/catalog/ProductCardSkeleton';
 import { EASE_EXPO } from '@/components/motion/reveal';
 
 const MAX_ITEMS = 24;
@@ -29,12 +30,21 @@ const pageVariants = {
  */
 export function ProductsCarousel() {
   const config = useCompanyConfig();
-  const { products } = useCatalog();
+  const { products, loading } = useCatalog();
   const isMobile = useIsMobile();
   const perPage = isMobile ? 4 : 6;
 
-  // embaralha uma vez por carregamento do catálogo, não a cada render
-  const mixed = useMemo(() => shuffle(products).slice(0, MAX_ITEMS), [products]);
+  // Embaralha uma vez e mantém a ordem quando o catálogo é atualizado com os
+  // mesmos produtos (a cópia salva no navegador sendo trocada pela atual),
+  // pra os cartões não trocarem de lugar na frente do cliente.
+  const orderRef = useRef<string[]>([]);
+  const mixed = useMemo(() => {
+    const byId = new Map(products.map((p) => [p.id, p]));
+    const prev = orderRef.current;
+    const sameSet = prev.length === byId.size && prev.every((id) => byId.has(id));
+    if (!sameSet) orderRef.current = shuffle([...byId.keys()]);
+    return orderRef.current.slice(0, MAX_ITEMS).map((id) => byId.get(id)!);
+  }, [products]);
   const pages = useMemo(() => chunk(mixed, perPage), [mixed, perPage]);
 
   const [[page, direction], setPage] = useState<[number, number]>([0, 0]);
@@ -50,7 +60,20 @@ export function ProductsCarousel() {
     return () => window.clearInterval(id);
   }, [paused, quickViewProduct, pages.length]);
 
-  if (!config.features.showCatalog || !config.pages.products || !pages.length) return null;
+  if (!config.features.showCatalog || !config.pages.products) return null;
+
+  // Primeira visita: guarda o espaço da seção enquanto os produtos chegam, em
+  // vez de a seção surgir depois lá em cima, quando o cliente já rolou a página.
+  if (loading) {
+    return (
+      <Section tone="alt">
+        <SectionHeading eyebrow="Catálogo" title="Produtos" description="Um pouco de tudo o que tem na ADOM." />
+        <ProductGridSkeleton count={6} className="mt-6 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:gap-6" />
+      </Section>
+    );
+  }
+
+  if (!pages.length) return null;
 
   return (
     <Section tone="alt">
