@@ -1,7 +1,6 @@
 import { SEO } from '@/components/layout/SEO';
 import { Hero } from '@/components/sections/Hero';
 import { MarqueeBanner } from '@/components/sections/MarqueeBanner';
-import { CategoryShowcase } from '@/components/sections/CategoryShowcase';
 import { CategoryGrid } from '@/components/sections/CategoryGrid';
 import { ProductsCarousel } from '@/components/sections/ProductsCarousel';
 import { NewArrivals } from '@/components/sections/NewArrivals';
@@ -11,8 +10,7 @@ import { AboutSection } from '@/components/sections/AboutSection';
 
 /**
  * Home / landing page. Ordem: Hero → Faixa animada → "compre por categoria" →
- * carrossel de produtos → novidades → vitrine por categoria → frase de destaque →
- * depoimentos → sobre.
+ * carrossel de produtos → novidades → frase de destaque → depoimentos → sobre.
  * Cada seção se auto-oculta quando não há dados (catálogo vazio, sem categorias etc.).
  */
 export function HomePage() {
@@ -24,7 +22,6 @@ export function HomePage() {
       <CategoryGrid />
       <ProductsCarousel />
       <NewArrivals />
-      <CategoryShowcase />
       <HighlightQuote />
       <Testimonials />
       <AboutSection />
