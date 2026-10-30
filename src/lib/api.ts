@@ -1,13 +1,21 @@
 import type { Category, Product } from '@/types';
 import type { DeliveryMethod } from '@/lib/shipping';
 
-const BASE_URL = import.meta.env.VITE_ADMIN_API_URL ?? '';
+const BASE_URL = (import.meta.env.VITE_ADMIN_API_URL ?? '').replace(/\/$/, '');
+
+/** Uma tentativa que passa disso é abandonada (e repetida pelo `withRetry` do catálogo). */
+const TIMEOUT_MS = 12_000;
+
+function timeoutSignal(): AbortSignal | undefined {
+  // navegadores antigos (Safari < 16) não têm AbortSignal.timeout: ficam sem limite
+  return typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(TIMEOUT_MS) : undefined;
+}
 
 async function getJson<T>(path: string): Promise<T> {
   if (!BASE_URL) {
     throw new Error('VITE_ADMIN_API_URL não configurada — defina no .env do site.');
   }
-  const res = await fetch(`${BASE_URL}${path}`);
+  const res = await fetch(`${BASE_URL}${path}`, { signal: timeoutSignal() });
   if (!res.ok) throw new Error(`Falha ao buscar ${path}: ${res.status}`);
   return res.json();
 }
