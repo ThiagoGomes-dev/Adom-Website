@@ -8,6 +8,8 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+## [0.5.0] - 2026-10-30
+
 ### Adicionado
 - Seção "Produtos" na home: produtos de todas as categorias misturados num carrossel animado de 3 colunas x 2 linhas (2 x 2 no celular), com troca automática, setas, bolinhas e arrastar.
 
