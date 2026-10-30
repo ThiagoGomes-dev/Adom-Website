@@ -18,7 +18,7 @@ const plan = 'completo' as const;
 
 export const companyConfig: CompanyConfig = {
   businessName: 'ADOM',
-  tagline: 'Camisetas básicas premium para o seu dia a dia',
+  tagline: 'Onde ser único é ser o primeiro',
   businessType: 'catalog-categories',
   plan,
   logo: '/img/adom.png', // logotipo oficial vetorizado, fundo transparente
@@ -82,7 +82,6 @@ export const companyConfig: CompanyConfig = {
   },
 
   hero: {
-    eyebrow: 'Nova coleção',
     title: 'Onde ser único\né ser o primeiro\nSeja ADOM.',
     highlight: 'ADOM',
     primaryCta: { label: 'Ver camisetas', action: 'products' },

@@ -8,6 +8,10 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+### Alterado
+- Retirado o selo "Nova coleção" do topo da página inicial.
+- Frase do rodapé agora é "Onde ser único é ser o primeiro".
+
 ## [0.4.0] - 2026-10-28
 
 ### Adicionado
