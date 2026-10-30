@@ -84,7 +84,7 @@ export const companyConfig: CompanyConfig = {
   hero: {
     title: 'Onde ser único\né ser o primeiro\nSeja ADOM.',
     highlight: 'ADOM',
-    primaryCta: { label: 'Ver camisetas', action: 'products' },
+    primaryCta: { label: 'Ver produtos', action: 'products' },
     secondaryCta: { label: 'Falar no WhatsApp', action: 'whatsapp' },
     image: '/img/hero-combo-wide.jpg',
     imageAlt: 'Camisetas ADOM em exposição na loja, sob o letreiro da marca',

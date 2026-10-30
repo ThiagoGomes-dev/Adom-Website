@@ -31,7 +31,7 @@ export function CategoryShowcase() {
   return (
     <>
       {rows.map(({ category, items }, i) => (
-        <Section key={category.id} tone={i % 2 === 0 ? 'surface' : 'alt'}>
+        <Section key={category.id} tone={i % 2 === 0 ? 'alt' : 'surface'}>
           <SectionHeading eyebrow="Categoria" title={category.name} align="left" className="mx-0" />
           <div className="mt-6">
             <ProductGrid products={items} />
