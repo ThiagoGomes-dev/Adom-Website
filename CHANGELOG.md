@@ -8,6 +8,11 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+## [0.5.2] - 2026-10-30
+
+### Removido
+- Vitrines por categoria da home. A página fica: Compre por categoria, Produtos, Chegou agora, frase de destaque, depoimentos e Sobre.
+
 ## [0.5.1] - 2026-10-30
 
 ### Corrigido
