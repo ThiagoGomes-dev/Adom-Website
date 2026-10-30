@@ -1,4 +1,4 @@
-import type { Category, Product } from '@/types';
+import type { Category, Product, Testimonial } from '@/types';
 import type { DeliveryMethod } from '@/lib/shipping';
 
 const BASE_URL = (import.meta.env.VITE_ADMIN_API_URL ?? '').replace(/\/$/, '');
@@ -28,6 +28,41 @@ export function fetchProducts(): Promise<Product[]> {
 /** Busca as categorias cadastradas no painel admin (adom-admin). */
 export function fetchCategories(): Promise<Category[]> {
   return getJson<Category[]>('/api/categories');
+}
+
+export interface GoogleReviews {
+  placeUrl: string | null;
+  rating: number | null;
+  totalReviews: number | null;
+  reviews: Testimonial[];
+}
+
+interface GoogleReviewsResponse {
+  placeUrl: string | null;
+  rating: number | null;
+  totalReviews: number | null;
+  reviews: { id: string; name: string; content: string; rating: number; avatar?: string; authorUrl?: string; reviewUrl?: string; relativeTime?: string }[];
+}
+
+/** Avaliações do Google Maps que o painel guarda por 1 dia (`GET /api/reviews`). */
+export async function fetchGoogleReviews(): Promise<GoogleReviews> {
+  const data = await getJson<GoogleReviewsResponse>('/api/reviews');
+  return {
+    placeUrl: data.placeUrl,
+    rating: data.rating,
+    totalReviews: data.totalReviews,
+    reviews: (data.reviews ?? []).map((r) => ({
+      id: r.id,
+      name: r.name,
+      role: r.relativeTime,
+      content: r.content,
+      rating: r.rating,
+      avatar: r.avatar,
+      authorUrl: r.authorUrl,
+      reviewUrl: r.reviewUrl,
+      source: 'google' as const,
+    })),
+  };
 }
 
 export interface CreateOrderPayload {

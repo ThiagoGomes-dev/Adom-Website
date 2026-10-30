@@ -8,6 +8,9 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+### Adicionado
+- Depoimentos: a seção "Quem compra, recomenda" mostra as avaliações do Google Maps da loja (até 5, nota 4 ou mais), com o mesmo visual, o selo Google em cada cartão e o link "ver todas". Se o painel ainda não tiver a chave do Google ou falhar, ficam os depoimentos de antes.
+
 ## [0.5.3] - 2026-10-30
 
 ### Corrigido
