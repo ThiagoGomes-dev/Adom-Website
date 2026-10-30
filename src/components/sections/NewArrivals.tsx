@@ -17,7 +17,7 @@ export function NewArrivals() {
   if (!newest.length) return null;
 
   return (
-    <Section tone="alt">
+    <Section>
       <SectionHeading eyebrow="Novidades" title="Chegou agora" description="As últimas peças adicionadas ao catálogo." />
       <div className="mt-6">
         <ProductGrid products={newest} />

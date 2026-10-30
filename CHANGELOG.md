@@ -8,6 +8,13 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+### Adicionado
+- Seção "Produtos" na home: produtos de todas as categorias misturados num carrossel animado de 3 colunas x 2 linhas (2 x 2 no celular), com troca automática, setas, bolinhas e arrastar.
+
+### Alterado
+- Botão principal do topo agora é "Ver produtos" e leva à página de produtos.
+- Nova ordem da home: Compre por categoria, Produtos, Chegou agora e, depois, as vitrines por categoria.
+
 ## [0.4.1] - 2026-10-30
 
 ### Alterado
