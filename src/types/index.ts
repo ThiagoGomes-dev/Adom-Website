@@ -293,6 +293,10 @@ export interface Testimonial {
   content: string;
   rating?: number; // 1-5
   avatar?: string;
+  /** Avaliações do Google: link do perfil do autor e da avaliação (exigido pelo Google). */
+  authorUrl?: string;
+  reviewUrl?: string;
+  source?: 'google';
 }
 
 export interface FAQItem {
