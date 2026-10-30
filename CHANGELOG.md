@@ -8,6 +8,8 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+## [0.5.3] - 2026-10-30
+
 ### Corrigido
 - Produtos sumidos no primeiro acesso: o catálogo começa a carregar junto com a página, tenta de novo se o painel demorar ou falhar, mostra cartões de carregamento no lugar das seções Produtos e Chegou agora e, para quem já visitou, aparece na hora com a última versão salva no navegador.
 
