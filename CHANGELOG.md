@@ -8,6 +8,11 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+## [0.5.1] - 2026-10-30
+
+### Corrigido
+- Faixa branca à direita da página no celular: elementos que entram deslizando pela lateral alargavam a página.
+
 ## [0.5.0] - 2026-10-30
 
 ### Adicionado

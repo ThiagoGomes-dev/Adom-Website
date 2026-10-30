@@ -29,9 +29,21 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/*
+ * Nada pode alargar a página no celular. Só `overflow-x: hidden` no body não
+ * basta: o navegador do celular aumenta a área da página para caber o que
+ * passa da borda (ex: o "Sobre" que entra deslizando da direita) e sobra uma
+ * faixa branca. `clip` corta sem criar área de rolagem e não quebra o header
+ * fixo (sticky); `hidden` fica de reserva para navegadores antigos.
+ */
+html,
+body {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 body {
   @apply bg-surface text-ink antialiased font-sans;
-  overflow-x: hidden;
 }
 
 ::selection {
