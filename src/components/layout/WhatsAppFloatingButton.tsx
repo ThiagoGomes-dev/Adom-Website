@@ -2,6 +2,7 @@ import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCompanyConfig } from '@/context/CompanyConfigContext';
 import { buildContactWhatsAppLink } from '@/lib/whatsapp';
+import { trackWhatsAppClick } from '@/lib/analytics';
 
 /**
  * Botão flutuante de WhatsApp, fixo no canto inferior direito, visível em
@@ -17,6 +18,7 @@ export function WhatsAppFloatingButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Falar no WhatsApp"
+      onClick={() => trackWhatsAppClick('botão flutuante')}
       initial={{ opacity: 0, scale: 0.4, y: 30 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 1 }}
