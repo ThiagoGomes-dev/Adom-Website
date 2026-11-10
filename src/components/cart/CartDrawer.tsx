@@ -11,6 +11,7 @@ import { useCepLookup, formatCep } from '@/hooks/useCepLookup';
 import { formatPrice } from '@/lib/currency';
 import { getAvailableStock } from '@/lib/stock';
 import { createOrder } from '@/lib/api';
+import { trackBeginCheckout, trackOpenCart } from '@/lib/analytics';
 import { readLastOrder, saveLastOrder } from '@/lib/lastOrder';
 import {
   computeShippingCost,
@@ -27,6 +28,13 @@ export function CartDrawer() {
   const { address: storeAddress } = useCompanyConfig();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   useScrollLock(open);
+
+  // "abriu o carrinho": conta cada abertura com itens dentro
+  useEffect(() => {
+    if (!open || items.length === 0) return;
+    trackOpenCart(items.reduce((sum, item) => sum + item.quantity, 0), totalPrice);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só no momento de abrir
+  }, [open]);
 
   const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('delivery');
   const [customerName, setCustomerName] = useState('');
@@ -114,6 +122,11 @@ export function CartDrawer() {
         customerEmail: customerEmail.trim(),
         note: addressNote,
       });
+      trackBeginCheckout(
+        items.map((item) => item.productId),
+        items.reduce((sum, item) => sum + item.quantity, 0),
+        totalPrice,
+      );
       saveLastOrder({ id: orderId, items, createdAt: new Date().toISOString() });
       clear();
       window.location.href = checkoutUrl;

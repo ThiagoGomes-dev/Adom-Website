@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { CartItem, Product } from '@/types';
 import { getAvailableStock, isOutOfStock, resolvePrice } from '@/lib/stock';
+import { trackAddToCart } from '@/lib/analytics';
 
 const STORAGE_KEY = 'cart:v1';
 
@@ -69,6 +70,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // trava na soma real do estoque — sem isso, adicionar o mesmo item em
     // duas visitas (ex: 15 + 15) passava do que existe de verdade (15)
     const maxStock = getAvailableStock(product, selectedVariants);
+    const unit = resolvePrice(product, selectedVariants);
+    trackAddToCart({ id: product.id, name: product.name, price: unit.promoPrice ?? unit.price }, quantity);
 
     setItems((prev) => {
       const existing = prev.find((item) => item.cartItemId === cartItemId);

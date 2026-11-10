@@ -6,6 +6,8 @@ import { Footer } from '@/components/layout/Footer';
 import { WhatsAppFloatingButton } from '@/components/layout/WhatsAppFloatingButton';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { AppRoutes } from '@/routes/AppRoutes';
+import { Analytics } from '@vercel/analytics/react';
+import { PageViewTracker } from '@/components/layout/PageViewTracker';
 
 export default function App() {
   return (
@@ -13,6 +15,8 @@ export default function App() {
       <CatalogProvider>
         <CartProvider>
           <ScrollToTop />
+          <PageViewTracker />
+          <Analytics />
           <div className="flex min-h-dvh flex-col">
             <Header />
             <main className="flex-1">
