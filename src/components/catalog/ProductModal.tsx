@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { trackViewProduct } from '@/lib/analytics';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, ShoppingBag, Check, Link as LinkIcon } from 'lucide-react';
 import type { Product } from '@/types';
@@ -103,6 +104,13 @@ function ProductModalContent({ product, onClose }: { product: Product; onClose: 
     activeImage,
     setActiveImage,
   } = useProductSelection(product);
+
+  // conta "viu produto" uma vez por produto aberto (preço base, sem variação)
+  useEffect(() => {
+    const base = resolvePrice(product, {});
+    trackViewProduct({ id: product.id, name: product.name, price: base.promoPrice ?? base.price });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só quando muda de produto, não a cada recarga do catálogo
+  }, [product.id]);
 
   const resolved = resolvePrice(product, selectedVariants);
   const price = resolved.promoPrice ?? resolved.price;

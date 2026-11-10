@@ -8,6 +8,14 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+## [0.6.0] - 2026-11-10
+
+### Adicionado
+- Medição de acessos: Vercel Web Analytics (visitas, páginas, de onde veio, UTM) e Meta Pixel opcional (`VITE_META_PIXEL_ID`) com o funil viu produto → adicionou ao carrinho → abriu o carrinho → foi para o pagamento, e clique no WhatsApp.
+
+### Corrigido
+- Prévia do link no WhatsApp/Instagram/Facebook mostrava "Site demonstrativo da plataforma…": descrição e imagem agora ficam fixas no HTML.
+
 ## [0.5.3] - 2026-10-30
 
 ### Corrigido
