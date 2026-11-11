@@ -144,6 +144,10 @@ export interface HeroContent {
   images?: string[];
   /** Quando definido, substitui a(s) imagem(ns) de fundo por um vídeo em loop (autoplay, mudo). */
   video?: string;
+  /** versão mais leve do vídeo para celular (tela até 767px). Sem ela, o celular usa `video`. */
+  videoMobile?: string;
+  /** imagem mostrada enquanto o vídeo carrega (de preferência o 1º quadro do vídeo). */
+  videoPoster?: string;
 }
 
 export interface Benefit {

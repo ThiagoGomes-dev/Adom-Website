@@ -8,6 +8,10 @@ Cada PR para `develop` adiciona uma linha em **Não lançado**. No PR de release
 
 ## [Não lançado]
 
+### Corrigido
+- Página inicial lenta no celular: o vídeo do topo tinha 26 MB e o navegador baixava tudo antes. Agora são 2 MB no celular (480p) e 4,5 MB no computador (720p), sem áudio, com carregamento aos poucos e uma imagem leve no lugar enquanto carrega.
+- Topo da página inicial mais baixo no celular e botão "Ver produtos" aparecendo mais cedo, para os produtos ficarem mais perto.
+
 ## [0.6.0] - 2026-11-10
 
 ### Adicionado
