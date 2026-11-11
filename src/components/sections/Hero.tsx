@@ -126,6 +126,13 @@ export function Hero() {
   const lines = hero.title.split('\n');
   const highlightWords = (hero.highlight?.split(' ') ?? []).map(normalizeWord);
 
+  // escolhido uma vez ao montar: celular baixa a versão leve
+  const [videoSrc] = useState(() =>
+    hero.videoMobile && typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+      ? hero.videoMobile
+      : hero.video,
+  );
+
   const sectionRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
   const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
@@ -133,19 +140,21 @@ export function Hero() {
   const contentOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
   return (
-    <section ref={sectionRef} className="relative flex min-h-[52vh] items-center justify-center overflow-hidden bg-ink sm:min-h-[62vh] lg:min-h-[78vh] xl:min-h-[86vh]">
+    <section ref={sectionRef} className="relative flex min-h-[44vh] items-center justify-center overflow-hidden bg-ink sm:min-h-[62vh] lg:min-h-[78vh] xl:min-h-[86vh]">
       {/* Fundo em tela cheia com leve zoom contínuo no scroll (efeito Ken Burns) */}
       {hero.video ? (
         <motion.div className="absolute inset-0" style={{ scale: bgScale }}>
           <video
             className="h-full w-full object-cover object-top"
-            src={hero.video}
-            poster={hero.images?.[0] ?? hero.image}
+            src={videoSrc}
+            poster={hero.videoPoster ?? hero.images?.[0] ?? hero.image}
             autoPlay
             loop
             muted
             playsInline
-            preload="auto"
+            // "metadata": o navegador não baixa o vídeo inteiro antes da hora —
+            // o autoplay vai puxando aos poucos, sem disputar banda com os produtos
+            preload="metadata"
             aria-label={hero.imageAlt ?? config.businessName}
           />
         </motion.div>
@@ -174,7 +183,7 @@ export function Hero() {
       <HeroParticles />
 
       <motion.div style={{ y: contentY, opacity: contentOpacity }} className="relative z-10 w-full">
-        <Container className="flex flex-col items-center px-6 py-16 text-center sm:py-20 lg:py-24">
+        <Container className="flex flex-col items-center px-6 py-10 text-center sm:py-20 lg:py-24">
           {hero.eyebrow && (
             <motion.span
               initial={{ opacity: 0, y: -12 }}
@@ -191,7 +200,7 @@ export function Hero() {
             initial="hidden"
             animate="visible"
             variants={titleContainer}
-            className="mt-6 max-w-4xl text-balance font-display text-3xl font-medium uppercase leading-[1.18] tracking-normal text-white sm:text-4xl lg:text-5xl"
+            className="mt-2 max-w-4xl text-balance font-display sm:mt-6 text-3xl font-medium uppercase leading-[1.18] tracking-normal text-white sm:text-4xl lg:text-5xl"
           >
             {lines.map((line, li) => (
               <span key={li} className="block">
@@ -231,8 +240,8 @@ export function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.7, ease: EASE_EXPO }}
-            className="mt-8 flex flex-col items-center gap-4"
+            transition={{ duration: 0.7, delay: 0.4, ease: EASE_EXPO }}
+            className="mt-6 flex flex-col items-center gap-3 sm:mt-8 sm:gap-4"
           >
             <motion.span whileHover={{ scale: 1.035 }} whileTap={{ scale: 0.97 }} className="inline-block">
               <Button
@@ -265,8 +274,8 @@ export function Hero() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.9 }}
-              className="mt-8 flex items-center gap-2 text-white/80"
+              transition={{ duration: 0.7, delay: 0.6 }}
+              className="mt-5 flex items-center gap-2 text-white/80"
             >
               <div className="flex" aria-hidden="true">
                 {Array.from({ length: 5 }).map((_, i) => (

@@ -89,7 +89,11 @@ export const companyConfig: CompanyConfig = {
     image: '/img/hero-combo-wide.jpg',
     imageAlt: 'Camisetas ADOM em exposição na loja, sob o letreiro da marca',
     images: ['/img/imagem-fundo01.jpeg', '/img/imagem-fundo02.jpeg'],
+    // 720p sem áudio (~4,5 MB) e 480p para celular (~2 MB). O original tinha 26 MB
+    // e travava o carregamento para quem chegava pelo anúncio no 4G.
     video: '/img/video-header.mp4',
+    videoMobile: '/img/video-header-480.mp4',
+    videoPoster: '/img/video-header-poster.jpg',
   },
 
   marqueeItems: [
